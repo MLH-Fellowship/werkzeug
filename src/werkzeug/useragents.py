@@ -1,6 +1,12 @@
 from __future__ import annotations
+
 import re
-from typing import Dict, Tuple, Union, Any, TYPE_CHECKING
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 if TYPE_CHECKING:
     from werkzeug.wrappers.request import Request
@@ -74,10 +80,7 @@ class UserAgentParser:
     def __call__(
         self, user_agent: str
     ) -> Union[
-        Tuple[str, str, str, str],
-        Tuple[None, str, str, None],
-        Tuple[None, None, None, None],
-        Tuple[str, str, str, None],
+        Tuple[Optional[str], Optional[str], Optional[str], Optional[str]],
     ]:
         for platform, regex in self.platforms:  # noqa: B007
             match = regex.search(user_agent)
@@ -179,7 +182,7 @@ class UserAgent:
     string: Any
     _parser = UserAgentParser()
 
-    def __init__(self, environ_or_string: Dict[str, Union[str, Request]]) -> None:
+    def __init__(self, environ_or_string: Any) -> None:
         if isinstance(environ_or_string, dict):
             environ_or_string = environ_or_string.get("HTTP_USER_AGENT", "")
         self.string = environ_or_string

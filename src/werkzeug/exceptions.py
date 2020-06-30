@@ -46,12 +46,19 @@ code, you can add a second except for a specific subclass of an error:
             return e
 """
 from __future__ import annotations
+
 import sys
 from datetime import datetime
 from html import escape
-from typing import Any, Callable, List, Tuple, Union, Dict, TYPE_CHECKING
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Type
+from typing import TYPE_CHECKING
+from typing import Union
 
 from ._internal import _get_environ
 
@@ -305,7 +312,7 @@ class Unauthorized(HTTPException):
         description: Optional[str] = None,
         response: None = None,
         www_authenticate: Optional[
-            Union[List[WWWAuthenticate], WWWAuthenticate]
+            Union[List[WWWAuthenticate], Tuple[WWWAuthenticate], WWWAuthenticate]
         ] = None,
     ) -> None:
         HTTPException.__init__(self, description, response)
@@ -842,7 +849,7 @@ class Aborter:
         extra: Optional[Dict[int, Type[NotFound]]] = None,
     ) -> None:
         if mapping is None:
-            mapping = default_exceptions
+            mapping = default_exceptions  # type: ignore
         self.mapping = dict(mapping)
         if extra is not None:
             self.mapping.update(extra)

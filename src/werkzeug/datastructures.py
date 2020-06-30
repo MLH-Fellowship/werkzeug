@@ -16,8 +16,10 @@ from os import fspath
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Hashable
 from typing import Iterator
 from typing import List
+from typing import Mapping
 from typing import Optional
 from typing import Set
 from typing import Tuple
@@ -34,7 +36,7 @@ def is_immutable(self):
     raise TypeError(f"{type(self).__name__!r} objects are immutable")
 
 
-def iter_multi_items(mapping: Any) -> Iterator[Any]:
+def iter_multi_items(mapping: Mapping) -> Iterator[Any]:
     """Iterates over the items of a mapping yielding keys and values
     without dropping any from more complex structures.
     """
@@ -64,7 +66,7 @@ class ImmutableListMixin:
     def __hash__(self) -> int:
         if self._hash_cache is not None:
             return self._hash_cache
-        rv = self._hash_cache = hash(tuple(self))
+        rv = self._hash_cache = hash(tuple(self))  # type: ignore
         return rv
 
     def __reduce_ex__(self, protocol):
@@ -178,10 +180,10 @@ class ImmutableMultiDictMixin(ImmutableDictMixin):
         Tuple[Type[ImmutableMultiDict], Tuple[List[Any]]],
         Tuple[Type[ImmutableMultiDict], Tuple[List[Tuple[str, str]]]],
     ]:
-        return type(self), (list(self.items(multi=True)),)
+        return type(self), (list(self.items(multi=True)),)  # type: ignore
 
     def _iter_hashitems(self) -> Iterator[Any]:
-        return self.items(multi=True)
+        return self.items(multi=True)  # type: ignore
 
     def add(self, key, value):
         is_immutable(self)
@@ -220,18 +222,18 @@ class UpdateDictMixin:
         return oncall
 
     def setdefault(self, key: str, default: None = None) -> Optional[str]:
-        modified = key not in self
-        rv = super().setdefault(key, default)
+        modified = key not in self  # type: ignore
+        rv = super().setdefault(key, default)  # type: ignore
         if modified and self.on_update is not None:
             self.on_update(self)
         return rv
 
     def pop(self, key: str, default: Optional[_Missing] = _missing) -> Optional[str]:
-        modified = key in self
+        modified = key in self  # type: ignore
         if default is _missing:
-            rv = super().pop(key)
+            rv = super().pop(key)  # type: ignore
         else:
-            rv = super().pop(key, default)
+            rv = super().pop(key, default)  # type: ignore
         if modified and self.on_update is not None:
             self.on_update(self)
         return rv
@@ -252,7 +254,7 @@ class TypeConversionDict(dict):
     .. versionadded:: 0.5
     """
 
-    def get(
+    def get(  # type: ignore
         self,
         key: str,
         default: Optional[Union[str, int]] = None,
@@ -366,21 +368,21 @@ class MultiDict(TypeConversionDict):
                 tmp[key] = value
             dict.__init__(self, tmp)
         else:
-            tmp = {}
+            tmp = {}  # type: ignore
             for key, value in mapping or ():
                 tmp.setdefault(key, []).append(value)
             dict.__init__(self, tmp)
 
     def __getstate__(self) -> Dict[bytes, Union[List[int], List[bytes]]]:
-        return dict(self.lists())
+        return dict(self.lists())  # type: ignore
 
-    def __setstate__(self, value: Dict[bytes, Union[List[int], List[bytes]]]) -> None:
+    def __setstate__(self, value: Dict[Any, Any]) -> None:
         dict.clear(self)
         dict.update(self, value)
 
     def __getitem__(
-        self, key: Union[str, int, bytes]
-    ) -> Union[str, List[int], bytes, int, FileStorage]:
+        self, key: Hashable
+    ) -> Any:
         """Return the first data value for this key;
         raises KeyError if not found.
 
@@ -395,7 +397,7 @@ class MultiDict(TypeConversionDict):
         raise exceptions.BadRequestKeyError(key)
 
     def __setitem__(
-        self, key: Union[str, bytes], value: Union[str, int, bytes]
+        self, key: Hashable, value: Any
     ) -> None:
         """Like :meth:`add` but removes an existing key first.
 
@@ -415,8 +417,8 @@ class MultiDict(TypeConversionDict):
         dict.setdefault(self, key, []).append(value)
 
     def getlist(
-        self, key: str, type: Optional[Type[int]] = None
-    ) -> Union[List[FileStorage], List[int], List[str]]:
+        self, key: Hashable, type: Optional[Callable] = None
+    ) -> List[Any]:
         """Return the list of items for a given key. If that key is not in the
         `MultiDict`, the return value will be an empty list.  Just like `get`,
         `getlist` accepts a `type` parameter.  All items will be converted
@@ -443,7 +445,7 @@ class MultiDict(TypeConversionDict):
         return result
 
     def setlist(
-        self, key: Union[str, bytes], new_list: Union[List[int], List[bytes]]
+        self, key: Hashable, new_list: Union[List[int], List[bytes]]
     ) -> None:
         """Remove the old values for a key and add new ones.  Note that the list
         you pass the values in will be shallow-copied before it is inserted in
@@ -463,7 +465,7 @@ class MultiDict(TypeConversionDict):
         dict.__setitem__(self, key, list(new_list))
 
     def setdefault(
-        self, key: str, default: Optional[int] = None
+        self, key: Hashable, default: Optional[int] = None
     ) -> Union[List[int], int]:
         """Returns the value for the key if it is in the dict, otherwise it
         returns `default` and sets that value for `key`.
@@ -479,7 +481,7 @@ class MultiDict(TypeConversionDict):
         return default
 
     def setlistdefault(
-        self, key: str, default_list: Optional[List[int]] = None
+        self, key: Hashable, default_list: Optional[List[int]] = None
     ) -> Union[List[int], List[str]]:
         """Like `setdefault` but sets multiple values.  The list returned
         is not a copy, but the list that is actually used internally.  This
@@ -504,7 +506,7 @@ class MultiDict(TypeConversionDict):
             default_list = dict.__getitem__(self, key)
         return default_list
 
-    def items(
+    def items(  # type: ignore
         self, multi: bool = False
     ) -> Iterator[
         Union[
@@ -531,20 +533,14 @@ class MultiDict(TypeConversionDict):
     def lists(
         self,
     ) -> Iterator[
-        Union[
-            Tuple[str, List[int]],
-            Tuple[str, List[FileStorage]],
-            Tuple[str, List[str]],
-            Tuple[bytes, List[int]],
-            Tuple[bytes, List[bytes]],
-        ]
+        Tuple[Hashable, List[Any]]
     ]:
         """Return a iterator of ``(key, values)`` pairs, where values is the list
         of all values associated with the key."""
         for key, values in dict.items(self):
             yield key, list(values)
 
-    def values(self) -> Iterator[Union[int, FileStorage]]:
+    def values(self) -> Iterator[Any]:  # type: ignore
         """Returns an iterator of the first value on every key's value list."""
         for values in dict.values(self):
             yield values[0]
@@ -569,7 +565,7 @@ class MultiDict(TypeConversionDict):
 
     def to_dict(
         self, flat: bool = True
-    ) -> Dict[str, Union[List[int], int, List[str], str]]:
+    ) -> Dict[Hashable, Any]:
         """Return the contents as regular dict.  If `flat` is `True` the
         returned dict will only have the first item present, if `flat` is
         `False` all values will be returned as lists.
@@ -583,7 +579,7 @@ class MultiDict(TypeConversionDict):
             return dict(self.items())
         return dict(self.lists())
 
-    def update(self, other_dict: Union[MultiDict, Dict[str, int]]) -> None:
+    def update(self, other_dict: Mapping) -> None:  # type: ignore
         """update() extends rather than replaces existing key lists:
 
         >>> a = MultiDict({'x': 1})
@@ -604,7 +600,7 @@ class MultiDict(TypeConversionDict):
         for key, value in iter_multi_items(other_dict):
             MultiDict.add(self, key, value)
 
-    def pop(self, key: str, default: Union[_Missing, int] = _missing) -> int:
+    def pop(self, key: str, default: Union[_Missing, int] = _missing) -> int:  # type: ignore
         """Pop the first item for a list on the dict.  Afterwards the
         key is removed from the dict, so additional values are discarded:
 
@@ -627,10 +623,10 @@ class MultiDict(TypeConversionDict):
             return lst[0]
         except KeyError:
             if default is not _missing:
-                return default
+                return default  # type: ignore
             raise exceptions.BadRequestKeyError(key)
 
-    def popitem(self) -> Tuple[str, int]:
+    def popitem(self) -> Tuple[Any, Any]:
         """Pop an item from the dict."""
         try:
             item = dict.popitem(self)
@@ -642,7 +638,7 @@ class MultiDict(TypeConversionDict):
         except KeyError as e:
             raise exceptions.BadRequestKeyError(e.args[0])
 
-    def poplist(self, key: str) -> List[int]:
+    def poplist(self, key: Hashable) -> List[Any]:
         """Pop the list for a key from the dict.  If the key is not in the dict
         an empty list is returned.
 
@@ -652,7 +648,7 @@ class MultiDict(TypeConversionDict):
         """
         return dict.pop(self, key, [])
 
-    def popitemlist(self) -> Tuple[str, List[int]]:
+    def popitemlist(self) -> Tuple[Hashable, List[Any]]:
         """Pop a ``(key, list)`` tuple from the dict."""
         try:
             return dict.popitem(self)
@@ -663,7 +659,7 @@ class MultiDict(TypeConversionDict):
         return self.copy()
 
     def __deepcopy__(self, memo: Dict[Any, Any]) -> Union[MultiDict, OrderedMultiDict]:
-        return self.deepcopy(memo=memo)
+        return self.deepcopy(memo=memo)  # type: ignore
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({list(self.items(multi=True))!r})"
@@ -681,8 +677,8 @@ class _omd_bucket:
     def __init__(
         self,
         omd: Union[ImmutableOrderedMultiDict, OrderedMultiDict],
-        key: Union[str, bytes],
-        value: Union[str, int, bytes],
+        key: Hashable,
+        value: Any,
     ) -> None:
         self.prev = omd._last_bucket
         self.key = key
@@ -690,10 +686,10 @@ class _omd_bucket:
         self.next = None
 
         if omd._first_bucket is None:
-            omd._first_bucket = self
+            omd._first_bucket = self  # type: ignore
         if omd._last_bucket is not None:
             omd._last_bucket.next = self
-        omd._last_bucket = self
+        omd._last_bucket = self  # type: ignore
 
     def unlink(self, omd: OrderedMultiDict) -> None:
         if self.prev:
@@ -701,9 +697,9 @@ class _omd_bucket:
         if self.next:
             self.next.prev = self.prev
         if omd._first_bucket is self:
-            omd._first_bucket = self.next
+            omd._first_bucket = self.next  # type: ignore
         if omd._last_bucket is self:
-            omd._last_bucket = self.prev
+            omd._last_bucket = self.prev  # type: ignore
 
 
 class OrderedMultiDict(MultiDict):
@@ -728,7 +724,7 @@ class OrderedMultiDict(MultiDict):
         if mapping is not None:
             OrderedMultiDict.update(self, mapping)
 
-    def __eq__(self, other: Union[MultiDict, OrderedMultiDict]) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, MultiDict):
             return NotImplemented
         if isinstance(other, OrderedMultiDict):
@@ -757,10 +753,8 @@ class OrderedMultiDict(MultiDict):
 
     def __reduce_ex__(
         self, protocol: int
-    ) -> Tuple[
-        Type[OrderedMultiDict],
-        Tuple[List[Union[Tuple[bytes, int], Tuple[bytes, bytes]]]],
-    ]:
+    ) -> Tuple[Type[OrderedMultiDict], Tuple[
+        List[Union[Tuple[str, str], Tuple[str, int], Tuple[bytes, int], Tuple[bytes, bytes]]]]]:
         return type(self), (list(self.items(multi=True)),)
 
     def __getstate__(self):
@@ -771,27 +765,27 @@ class OrderedMultiDict(MultiDict):
         for key, value in values:
             self.add(key, value)
 
-    def __getitem__(self, key: Union[str, int]) -> Union[List[int], str, int]:
+    def __getitem__(self, key: object) -> object:
         if key in self:
             return dict.__getitem__(self, key)[0].value
         raise exceptions.BadRequestKeyError(key)
 
-    def __setitem__(self, key: Union[str, bytes], value: Union[int, bytes]) -> None:
+    def __setitem__(self, key: Hashable, value: Any) -> None:
         self.poplist(key)
         self.add(key, value)
 
     def __delitem__(self, key: str) -> None:
         self.pop(key)
 
-    def keys(self) -> Iterator[Any]:
+    def keys(self) -> Iterator[Any]:  # type: ignore
         return (key for key, value in self.items())
 
     __iter__ = keys
 
-    def values(self) -> Iterator[Any]:
+    def values(self) -> Iterator[Any]:  # type: ignore
         return (value for key, value in self.items())
 
-    def items(
+    def items(  # type: ignore
         self, multi: bool = False
     ) -> Iterator[
         Union[Tuple[str, str], Tuple[str, int], Tuple[bytes, int], Tuple[bytes, bytes]]
@@ -802,15 +796,15 @@ class OrderedMultiDict(MultiDict):
                 yield ptr.key, ptr.value
                 ptr = ptr.next
         else:
-            returned_keys = set()
+            returned_keys: Set[Any] = set()
             while ptr is not None:
                 if ptr.key not in returned_keys:
                     returned_keys.add(ptr.key)
                     yield ptr.key, ptr.value
                 ptr = ptr.next
 
-    def lists(self) -> Iterator[Tuple[str, List[int]]]:
-        returned_keys = set()
+    def lists(self) -> Iterator[Tuple[Hashable, List[Any]]]:
+        returned_keys: Set[Any] = set()
         ptr = self._first_bucket
         while ptr is not None:
             if ptr.key not in returned_keys:
@@ -822,12 +816,12 @@ class OrderedMultiDict(MultiDict):
         for _key, values in self.lists():
             yield values
 
-    def add(self, key: Union[str, bytes], value: Union[str, int, bytes]) -> None:
+    def add(self, key: Hashable, value: Any) -> None:
         dict.setdefault(self, key, []).append(_omd_bucket(self, key, value))
 
     def getlist(
-        self, key: str, type: Optional[Type[int]] = None
-    ) -> Union[List[int], List[str]]:
+        self, key: Hashable, type: Optional[Callable] = None
+    ) -> List[Any]:
         try:
             rv = dict.__getitem__(self, key)
         except KeyError:
@@ -843,7 +837,7 @@ class OrderedMultiDict(MultiDict):
         return result
 
     def setlist(
-        self, key: Union[str, bytes], new_list: Union[List[int], List[bytes]]
+        self, key: Hashable, new_list: List[Any]
     ) -> None:
         self.poplist(key)
         for value in new_list:
@@ -852,19 +846,19 @@ class OrderedMultiDict(MultiDict):
     def setlistdefault(self, key, default_list=None):
         raise TypeError("setlistdefault is unsupported for ordered multi dicts")
 
-    def update(self, mapping: Any) -> None:
+    def update(self, mapping: Mapping) -> None:  # type: ignore
         for key, value in iter_multi_items(mapping):
             OrderedMultiDict.add(self, key, value)
 
-    def poplist(self, key: Union[str, bytes]) -> List[int]:
+    def poplist(self, key: Hashable) -> List[int]:
         buckets = dict.pop(self, key, ())
         for bucket in buckets:
             bucket.unlink(self)
         return [x.value for x in buckets]
 
     def pop(
-        self, key: str, default: Optional[Union[int, _Missing]] = _missing
-    ) -> Optional[Union[str, int]]:
+        self, key: str, default: Optional[Union[Any, _Missing]] = _missing
+    ) -> Optional[Any]:
         try:
             buckets = dict.pop(self, key)
         except KeyError:
@@ -875,7 +869,7 @@ class OrderedMultiDict(MultiDict):
             bucket.unlink(self)
         return buckets[0].value
 
-    def popitem(self) -> Tuple[str, int]:
+    def popitem(self) -> Tuple[Hashable, Any]:
         try:
             key, buckets = dict.popitem(self)
         except KeyError as e:
@@ -938,6 +932,7 @@ class Headers:
        The :meth:`linked` function was removed without replacement as it
        was an API that does not support the changes to the encoding model.
     """
+    _list: List[Any]
 
     def __init__(self, defaults: Optional[Any] = None) -> None:
         self._list = []
@@ -968,23 +963,23 @@ class Headers:
             raise KeyError()
         raise exceptions.BadRequestKeyError(key)
 
-    def __eq__(self, other: Headers) -> bool:
+    def __eq__(self, other: object) -> bool:
         def lowered(item):
             return (item[0].lower(),) + item[1:]
 
         return other.__class__ is self.__class__ and set(
-            map(lowered, other._list)
+            map(lowered, other._list)  # type: ignore
         ) == set(map(lowered, self._list))
 
     __hash__ = None
 
     def get(
         self,
-        key: str,
-        default: Optional[str] = None,
-        type: Optional[Type[int]] = None,
+        key: Hashable,
+        default: Optional[Any] = None,
+        type: Optional[Callable[[Any], Any]] = None,
         as_bytes: bool = False,
-    ) -> Optional[Union[bytes, str, int]]:
+    ) -> Optional[Any]:
         """Return the default value if the requested data doesn't exist.
         If `type` is provided and is a callable it should convert the value,
         return it or raise a :exc:`ValueError` if that is not possible.  In
@@ -1008,11 +1003,11 @@ class Headers:
         :param as_bytes: return bytes instead of strings.
         """
         try:
-            rv = self.__getitem__(key, _get_mode=True)
+            rv = self.__getitem__(key, _get_mode=True)  # type: ignore
         except KeyError:
             return default
         if as_bytes:
-            rv = rv.encode("latin1")
+            rv = rv.encode("latin1")  # type: ignore
         if type is None:
             return rv
         try:
@@ -1052,7 +1047,7 @@ class Headers:
                 result.append(v)
         return result
 
-    def get_all(self, name: str) -> List[str]:
+    def get_all(self, name: str) -> List[Any]:
         """Return a list of all the values for the named field.
 
         This method is compatible with the :mod:`wsgiref`
@@ -1104,7 +1099,7 @@ class Headers:
         if _index_operation and isinstance(key, (int, slice)):
             del self._list[key]
             return
-        key = key.lower()
+        key = key.lower()  # type: ignore
         new = []
         for k, v in self._list:
             if k.lower() != key:
@@ -1116,13 +1111,13 @@ class Headers:
 
         :param key: The key to be removed.
         """
-        return self.__delitem__(key, _index_operation=False)
+        return self.__delitem__(key, _index_operation=False)  # type: ignore
 
     def pop(
         self,
         key: Optional[str] = None,
         default: Optional[Union[int, _Missing]] = _missing,
-    ) -> Optional[Union[str, int]]:
+    ) -> Optional[Any]:
         """Removes and returns a key or index.
 
         :param key: The key to be popped.  If this is an integer the item at
@@ -1151,7 +1146,7 @@ class Headers:
     def __contains__(self, key: Union[str, int]) -> bool:
         """Check if a key is present."""
         try:
-            self.__getitem__(key, _get_mode=True)
+            self.__getitem__(key, _get_mode=True)  # type: ignore
         except KeyError:
             return False
         return True

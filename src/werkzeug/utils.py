@@ -1,29 +1,29 @@
 from __future__ import annotations
+
 import codecs
 import os
 import pkgutil
 import re
 import sys
 import warnings
+from datetime import date
 from html.entities import name2codepoint
+from io import BytesIO
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Iterator
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import TYPE_CHECKING
+from typing import Union
+
+from _pytest.capture import EncodedFile
 
 from ._internal import _DictAccessorProperty
 from ._internal import _missing
 from ._internal import _parse_signature
-from _pytest.capture import EncodedFile
-from datetime import date
-from io import BytesIO
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterator,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-    TYPE_CHECKING,
-)
 
 _entity_re = re.compile(r"&([^;]+);")
 _filename_ascii_strip_re = re.compile(r"[^A-Za-z0-9_.-]")
@@ -521,7 +521,7 @@ def redirect(location: str, code: int = 302, Response: None = None) -> Response:
     import html
 
     if Response is None:
-        from .wrappers import Response
+        from .wrappers import Response  # type: ignore
 
     display_location = html.escape(location)
     if isinstance(location, str):
@@ -530,7 +530,7 @@ def redirect(location: str, code: int = 302, Response: None = None) -> Response:
         from .urls import iri_to_uri
 
         location = iri_to_uri(location, safe_conversion=True)
-    response = Response(
+    response = Response(  # type: ignore
         '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n'
         "<title>Redirecting...</title>\n"
         "<h1>Redirecting...</h1>\n"
@@ -555,7 +555,7 @@ def append_slash_redirect(
                     the redirect.
     :param code: the status code for the redirect.
     """
-    new_path = environ["PATH_INFO"].strip("/") + "/"
+    new_path = environ["PATH_INFO"].strip("/") + "/"  # type: ignore
     query_string = environ.get("QUERY_STRING")
     if query_string:
         new_path += f"?{query_string}"
@@ -564,7 +564,7 @@ def append_slash_redirect(
 
 def import_string(
     import_name: str, silent: bool = False
-) -> Optional[Union[Type[DebuggedApplication], Type[date]]]:
+) -> Any:
     """Imports an object based on a string.  This is useful if you want to
     use import paths as endpoints or something similar.  An import path can
     be specified either in dotted notation (``xml.sax.saxutils.escape``)
@@ -597,6 +597,8 @@ def import_string(
     except ImportError as e:
         if not silent:
             raise ImportStringError(import_name, e).with_traceback(sys.exc_info()[2])
+
+    return None
 
 
 def find_modules(

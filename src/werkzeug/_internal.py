@@ -22,6 +22,8 @@ from typing import TYPE_CHECKING
 from typing import Union
 from weakref import WeakKeyDictionary
 
+from werkzeug.types import BytesOrStr
+
 if TYPE_CHECKING:
     from werkzeug.wrappers.base_request import BaseRequest
     from werkzeug.wrappers.request import Request
@@ -70,7 +72,7 @@ _missing = _Missing()
 
 def _make_encode_wrapper(
     reference: Optional[Union[str, bytes]]
-) -> Union[methodcaller, Callable]:
+) -> Callable[[str], Any]:
     """Create a function that will be called with a string argument. If
     the reference is bytes, values will be encoded to bytes.
     """
@@ -115,7 +117,7 @@ def _to_str(
     charset: Optional[str] = sys.getdefaultencoding(),  # noqa: B008
     errors: str = "strict",
     allow_none_charset: bool = False,
-) -> Optional[Union[str, bytes]]:
+) -> Optional[str]:
     if x is None or isinstance(x, str):
         return x
 
@@ -123,7 +125,7 @@ def _to_str(
         return str(x)
 
     if charset is None and allow_none_charset:
-        return x
+        return x  # type: ignore
 
     return x.decode(charset, errors)
 
@@ -272,10 +274,10 @@ def _date_to_unix(arg: datetime) -> int:
     epoch in utc.
     """
     if isinstance(arg, datetime):
-        arg = arg.utctimetuple()
+        arg = arg.utctimetuple()  # type: ignore
     elif isinstance(arg, (int, float)):
         return int(arg)
-    year, month, day, hour, minute, second = arg[:6]
+    year, month, day, hour, minute, second = arg[:6]  # type: ignore
     days = date(year, month, 1).toordinal() - _epoch_ord + day - 1
     hours = days * 24 + hour
     minutes = hours * 60 + minute
@@ -333,7 +335,7 @@ class _DictAccessorProperty:
             raise AttributeError("read only property")
         if self.dump_func is not None:
             value = self.dump_func(value)
-        self.lookup(obj)[self.name] = value
+        self.lookup(obj)[self.name] = value  # type: ignore
 
     def __delete__(self, obj):
         if self.read_only:
@@ -430,11 +432,11 @@ def _encode_idna(domain: str) -> bytes:
     # Otherwise encode each part separately
     parts = domain.split(".")
     for idx, part in enumerate(parts):
-        parts[idx] = part.encode("idna")
-    return b".".join(parts)
+        parts[idx] = part.encode("idna")  # type: ignore
+    return b".".join(parts)  # type: ignore
 
 
-def _decode_idna(domain: str) -> str:
+def _decode_idna(domain: Union[str, bytes]) -> Union[str, bytes]:
     # If the input is a string try to encode it to ascii to
     # do the idna decoding.  if that fails because of an
     # unicode error, then we already have a decoded idna domain
@@ -450,11 +452,11 @@ def _decode_idna(domain: str) -> str:
     parts = domain.split(b".")
     for idx, part in enumerate(parts):
         try:
-            parts[idx] = part.decode("idna")
+            parts[idx] = part.decode("idna")  # type: ignore
         except UnicodeError:
-            parts[idx] = part.decode("ascii", "ignore")
+            parts[idx] = part.decode("ascii", "ignore")  # type: ignore
 
-    return ".".join(parts)
+    return ".".join(parts)  # type: ignore
 
 
 def _make_cookie_domain(domain: Optional[str]) -> Optional[bytes]:

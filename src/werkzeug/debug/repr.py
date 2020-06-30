@@ -11,11 +11,19 @@ import re
 import sys
 from collections import deque
 from html import escape
-from traceback import format_exception_only
-from typing import Callable, Dict, List, Tuple, Type, Union, Any
-from typing import Optional
-from _pytest.capture import EncodedFile
 from re import Pattern
+from traceback import format_exception_only
+from typing import Any
+from typing import AnyStr
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
+
+from _pytest.capture import EncodedFile
 
 missing: Any = object()
 _paragraph_re = re.compile(r"(?:\r\n|\r|\n){2,}")
@@ -51,7 +59,7 @@ def dump(obj: Union[List[int], object] = missing) -> None:
         rv = gen.dump_locals(sys._getframe(1).f_locals)
     else:
         rv = gen.dump_object(obj)
-    sys.stdout._write(rv)
+    sys.stdout._write(rv)  # type: ignore
 
 
 class _Helper:
@@ -100,7 +108,7 @@ def _add_subclass_info(inner: str, obj: Any, base: Any) -> str:
 
 class DebugReprGenerator:
     def __init__(self) -> None:
-        self._stack = []
+        self._stack: List[Any] = []
 
     def _sequence_repr_maker(  # type: ignore
         left: str, right: str, base=object(), limit=8  # noqa: B008, B902
@@ -135,11 +143,11 @@ class DebugReprGenerator:
 
     def regex_repr(self, obj: Pattern) -> str:
         pattern = repr(obj.pattern)
-        pattern = codecs.decode(pattern, "unicode-escape", "ignore")
+        pattern = codecs.decode(pattern, "unicode-escape", "ignore") # type: ignore
         pattern = f"r{pattern}"
         return f're.compile(<span class="string regex">{pattern}</span>)'
 
-    def string_repr(self, obj: str, limit: int = 70) -> str:
+    def string_repr(self, obj: Union[str, bytes], limit: int = 70) -> str:
         buf = ['<span class="string">']
         r = repr(obj)
 
@@ -230,7 +238,7 @@ class DebugReprGenerator:
             f"&lt;broken repr ({escape(info.strip())})&gt;</span>"
         )
 
-    def repr(self, obj):
+    def repr(self, obj) -> str:
         recursive = False
         for item in self._stack:
             if item is obj:
@@ -246,9 +254,10 @@ class DebugReprGenerator:
             self._stack.pop()
 
     def dump_object(
-        self, obj: Union[Dict[Union[str, int], int], List[int], Dict[str, int]]
+        self, obj: object
     ) -> str:
-        repr = items = None
+        repr = None
+        items: Optional[List[Tuple[str, str]]] = None
         if isinstance(obj, dict):
             title = "Contents of"
             items = []
