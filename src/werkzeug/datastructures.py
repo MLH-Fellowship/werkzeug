@@ -26,6 +26,8 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+from werkzeug.types import UnicodeEncodable, T
+
 from . import exceptions
 from ._internal import _make_encode_wrapper
 from ._internal import _missing
@@ -209,7 +211,7 @@ class UpdateDictMixin:
     :private:
     """
 
-    on_update = None
+    on_update: Callable = None
 
     def calls_update(name: str):  # type: ignore # noqa: B902
         def oncall(self, *args, **kw):
@@ -254,12 +256,12 @@ class TypeConversionDict(dict):
     .. versionadded:: 0.5
     """
 
-    def get(  # type: ignore
+    def get(
         self,
         key: str,
-        default: Optional[Union[str, int]] = None,
-        type: Optional[Union[Type[int], Callable]] = None,
-    ) -> Optional[Union[str, int]]:
+        default: Optional[T] = None,
+        type: Optional[Callable[[Any], T]] = None,
+    ) -> Optional[Union[Any, T]]:
         """Return the default value if the requested data doesn't exist.
         If `type` is provided and is a callable it should convert the value,
         return it or raise a :exc:`ValueError` if that is not possible.  In
@@ -380,9 +382,7 @@ class MultiDict(TypeConversionDict):
         dict.clear(self)
         dict.update(self, value)
 
-    def __getitem__(
-        self, key: Hashable
-    ) -> Any:
+    def __getitem__(self, key: Hashable) -> Any:
         """Return the first data value for this key;
         raises KeyError if not found.
 
@@ -396,9 +396,7 @@ class MultiDict(TypeConversionDict):
                 return lst[0]
         raise exceptions.BadRequestKeyError(key)
 
-    def __setitem__(
-        self, key: Hashable, value: Any
-    ) -> None:
+    def __setitem__(self, key: Hashable, value: Any) -> None:
         """Like :meth:`add` but removes an existing key first.
 
         :param key: the key for the value.
@@ -406,7 +404,7 @@ class MultiDict(TypeConversionDict):
         """
         dict.__setitem__(self, key, [value])
 
-    def add(self, key: str, value: Union[str, int, FileStorage]) -> None:
+    def add(self, key: Hashable, value: Any) -> None:
         """Adds a new value for the key.
 
         .. versionadded:: 0.6
@@ -417,8 +415,8 @@ class MultiDict(TypeConversionDict):
         dict.setdefault(self, key, []).append(value)
 
     def getlist(
-        self, key: Hashable, type: Optional[Callable] = None
-    ) -> List[Any]:
+        self, key: Hashable, type: Optional[Callable[[Any], T]] = None
+    ) -> List[Union[Any, T]]:
         """Return the list of items for a given key. If that key is not in the
         `MultiDict`, the return value will be an empty list.  Just like `get`,
         `getlist` accepts a `type` parameter.  All items will be converted
@@ -444,9 +442,7 @@ class MultiDict(TypeConversionDict):
                 pass
         return result
 
-    def setlist(
-        self, key: Hashable, new_list: Union[List[int], List[bytes]]
-    ) -> None:
+    def setlist(self, key: Hashable, new_list: List[Any]) -> None:
         """Remove the old values for a key and add new ones.  Note that the list
         you pass the values in will be shallow-copied before it is inserted in
         the dictionary.
@@ -464,9 +460,7 @@ class MultiDict(TypeConversionDict):
         """
         dict.__setitem__(self, key, list(new_list))
 
-    def setdefault(
-        self, key: Hashable, default: Optional[int] = None
-    ) -> Union[List[int], int]:
+    def setdefault(self, key: Hashable, default: Optional[T] = None) -> Union[Any, T]:
         """Returns the value for the key if it is in the dict, otherwise it
         returns `default` and sets that value for `key`.
 
@@ -481,8 +475,8 @@ class MultiDict(TypeConversionDict):
         return default
 
     def setlistdefault(
-        self, key: Hashable, default_list: Optional[List[int]] = None
-    ) -> Union[List[int], List[str]]:
+        self, key: Hashable, default_list: Optional[List[T]] = None
+    ) -> List[T]:
         """Like `setdefault` but sets multiple values.  The list returned
         is not a copy, but the list that is actually used internally.  This
         means that you can put new values into the dict by appending items
@@ -530,11 +524,7 @@ class MultiDict(TypeConversionDict):
             else:
                 yield key, values[0]
 
-    def lists(
-        self,
-    ) -> Iterator[
-        Tuple[Hashable, List[Any]]
-    ]:
+    def lists(self,) -> Iterator[Tuple[Hashable, List[Any]]]:
         """Return a iterator of ``(key, values)`` pairs, where values is the list
         of all values associated with the key."""
         for key, values in dict.items(self):
@@ -563,9 +553,7 @@ class MultiDict(TypeConversionDict):
         """Return a deep copy of this object."""
         return self.__class__(deepcopy(self.to_dict(flat=False), memo))
 
-    def to_dict(
-        self, flat: bool = True
-    ) -> Dict[Hashable, Any]:
+    def to_dict(self, flat: bool = True) -> Dict[Hashable, Any]:
         """Return the contents as regular dict.  If `flat` is `True` the
         returned dict will only have the first item present, if `flat` is
         `False` all values will be returned as lists.
@@ -753,8 +741,19 @@ class OrderedMultiDict(MultiDict):
 
     def __reduce_ex__(
         self, protocol: int
-    ) -> Tuple[Type[OrderedMultiDict], Tuple[
-        List[Union[Tuple[str, str], Tuple[str, int], Tuple[bytes, int], Tuple[bytes, bytes]]]]]:
+    ) -> Tuple[
+        Type[OrderedMultiDict],
+        Tuple[
+            List[
+                Union[
+                    Tuple[str, str],
+                    Tuple[str, int],
+                    Tuple[bytes, int],
+                    Tuple[bytes, bytes],
+                ]
+            ]
+        ],
+    ]:
         return type(self), (list(self.items(multi=True)),)
 
     def __getstate__(self):
@@ -819,9 +818,7 @@ class OrderedMultiDict(MultiDict):
     def add(self, key: Hashable, value: Any) -> None:
         dict.setdefault(self, key, []).append(_omd_bucket(self, key, value))
 
-    def getlist(
-        self, key: Hashable, type: Optional[Callable] = None
-    ) -> List[Any]:
+    def getlist(self, key: Hashable, type: Optional[Callable] = None) -> List[Any]:
         try:
             rv = dict.__getitem__(self, key)
         except KeyError:
@@ -836,9 +833,7 @@ class OrderedMultiDict(MultiDict):
                 pass
         return result
 
-    def setlist(
-        self, key: Hashable, new_list: List[Any]
-    ) -> None:
+    def setlist(self, key: Hashable, new_list: List[Any]) -> None:
         self.poplist(key)
         for value in new_list:
             self.add(key, value)
@@ -892,7 +887,7 @@ def _options_header_vkw(value: str, kw: Dict[str, str]) -> str:
     return dump_options_header(value, {k.replace("_", "-"): v for k, v in kw.items()})
 
 
-def _unicodify_header_value(value: Union[str, int, bytes]) -> str:
+def _unicodify_header_value(value: UnicodeEncodable) -> str:
     if isinstance(value, bytes):
         value = value.decode("latin-1")
     if not isinstance(value, str):
@@ -932,6 +927,7 @@ class Headers:
        The :meth:`linked` function was removed without replacement as it
        was an API that does not support the changes to the encoding model.
     """
+
     _list: List[Any]
 
     def __init__(self, defaults: Optional[Any] = None) -> None:
@@ -1016,7 +1012,10 @@ class Headers:
             return default
 
     def getlist(
-        self, key: str, type: Optional[Type[int]] = None, as_bytes: bool = False
+        self,
+        key: UnicodeEncodable,
+        type: Optional[Type[int]] = None,
+        as_bytes: bool = False,
     ) -> Union[List[int], List[str]]:
         """Return the list of items for a given key. If that key is not in the
         :class:`Headers`, the return value will be an empty list.  Just like
@@ -1033,7 +1032,7 @@ class Headers:
         :return: a :class:`list` of all the values for the key.
         :param as_bytes: return bytes instead of strings.
         """
-        ikey = key.lower()
+        ikey = key.lower()  # type: ignore
         result = []
         for k, v in self:
             if k.lower() == ikey:
@@ -1106,7 +1105,7 @@ class Headers:
                 new.append((k, v))
         self._list[:] = new
 
-    def remove(self, key: str) -> None:
+    def remove(self, key: UnicodeEncodable) -> None:
         """Remove a key.
 
         :param key: The key to be removed.
@@ -1115,7 +1114,7 @@ class Headers:
 
     def pop(
         self,
-        key: Optional[str] = None,
+        key: Optional[Union[str, int]] = None,
         default: Optional[Union[int, _Missing]] = _missing,
     ) -> Optional[Any]:
         """Removes and returns a key or index.
@@ -1160,7 +1159,9 @@ class Headers:
     def __len__(self) -> int:
         return len(self._list)
 
-    def add(self, _key: str, _value: str, **kw) -> None:
+    def add(
+        self, _key: UnicodeEncodable, _value: Union[UnicodeEncodable], **kw
+    ) -> None:
         """Add a new header tuple to the list.
 
         Keyword arguments can specify additional parameters for the header
@@ -1177,13 +1178,13 @@ class Headers:
             keyword arguments were added for :mod:`wsgiref` compatibility.
         """
         if kw:
-            _value = _options_header_vkw(_value, kw)
+            _value = _options_header_vkw(_value, kw)  # type: ignore
         _key = _unicodify_header_value(_key)
         _value = _unicodify_header_value(_value)
         self._validate_value(_value)
         self._list.append((_key, _value))
 
-    def _validate_value(self, value: str) -> None:
+    def _validate_value(self, value: Any) -> None:
         if not isinstance(value, str):
             raise TypeError("Value should be a string.")
         if "\n" in value or "\r" in value:
@@ -1205,7 +1206,7 @@ class Headers:
         del self._list[:]
 
     def set(
-        self, _key: Union[str, bytes], _value: Union[str, int, bytes], **kw
+        self, _key: UnicodeEncodable, _value: Union[UnicodeEncodable, str], **kw
     ) -> None:
         """Remove all header tuples for `key` and add a new one.  The newly
         added key either appears at the end of the list if there was no
@@ -1222,7 +1223,7 @@ class Headers:
         :param value: The value to be inserted.
         """
         if kw:
-            _value = _options_header_vkw(_value, kw)
+            _value = _options_header_vkw(_value, kw)  # type: ignore
         _key = _unicodify_header_value(_key)
         _value = _unicodify_header_value(_value)
         self._validate_value(_value)
@@ -1241,7 +1242,9 @@ class Headers:
             return
         self._list[idx + 1 :] = [t for t in listiter if t[0].lower() != ikey]
 
-    def setlist(self, key: str, values: List[str]) -> None:
+    def setlist(
+        self, key: UnicodeEncodable, values: List[Union[UnicodeEncodable, str]]
+    ) -> None:
         """Remove any existing values for a header and add new ones.
 
         :param key: The header key to set.
@@ -1258,7 +1261,7 @@ class Headers:
         else:
             self.remove(key)
 
-    def setdefault(self, key: str, default: str) -> str:
+    def setdefault(self, key: UnicodeEncodable, default: Any) -> Any:
         """Return the first value for the key if it is in the headers,
         otherwise set the header to the value given by ``default`` and
         return that.
@@ -1268,12 +1271,12 @@ class Headers:
             headers.
         """
         if key in self:
-            return self[key]
+            return self[key]  # type: ignore
 
         self.set(key, default)
         return default
 
-    def setlistdefault(self, key: str, default: List[str]) -> List[str]:
+    def setlistdefault(self, key: UnicodeEncodable, default: List[Any]) -> List[Any]:
         """Return the list of values for the key if it is in the
         headers, otherwise set the header to the list of values given
         by ``default`` and return that.
@@ -1292,9 +1295,7 @@ class Headers:
 
         return self.getlist(key)
 
-    def __setitem__(
-        self, key: Union[str, slice], value: Union[List[Tuple[str, str]], str, int]
-    ) -> None:
+    def __setitem__(self, key: Union[UnicodeEncodable, slice], value: Any) -> None:
         """Like :meth:`set` but also supports index/slice based setting."""
         if isinstance(key, (slice, int)):
             if isinstance(key, int):
@@ -1303,7 +1304,8 @@ class Headers:
                 (_unicodify_header_value(k), _unicodify_header_value(v))
                 for (k, v) in value
             ]
-            [self._validate_value(v) for (k, v) in value]
+            for (_, v) in value:
+                self._validate_value(v)
             if isinstance(key, int):
                 self._list[key] = value[0]
             else:
@@ -1332,11 +1334,11 @@ class Headers:
 
             if isinstance(mapping, (Headers, MultiDict)):
                 for key in mapping.keys():
-                    self.setlist(key, mapping.getlist(key))
+                    self.setlist(key, mapping.getlist(key))  # type: ignore
             elif isinstance(mapping, dict):
                 for key, value in mapping.items():
                     if isinstance(value, (list, tuple)):
-                        self.setlist(key, value)
+                        self.setlist(key, value)  # type: ignore
                     else:
                         self.set(key, value)
             else:
@@ -1345,7 +1347,7 @@ class Headers:
 
         for key, value in kwargs.items():
             if isinstance(value, (list, tuple)):
-                self.setlist(key, value)
+                self.setlist(key, value)  # type: ignore
             else:
                 self.set(key, value)
 
@@ -1446,7 +1448,7 @@ class EnvironHeaders(ImmutableHeadersMixin, Headers):  # type: ignore
 
     __hash__ = None
 
-    def __getitem__(self, key: Union[str, int], _get_mode: bool = False) -> str:
+    def __getitem__(self, key: Union[str, int], _get_mode: bool = False) -> str:  # type: ignore
         # _get_mode is a no-op for this class as there is no index but
         # used because get() calls it.
         if not isinstance(key, str):
@@ -1501,35 +1503,30 @@ class CombinedMultiDict(ImmutableMultiDictMixin, MultiDict):  # type: ignore
     exceptions.
     """
 
+    dicts: List[Any]
+
     def __reduce_ex__(self, protocol):
         return type(self), (self.dicts,)
 
-    def __init__(
-        self,
-        dicts: Optional[
-            Union[
-                List[ImmutableOrderedMultiDict],
-                List[MultiDict],
-                Tuple[MultiDict, MultiDict],
-                List[Union[MultiDict, FileMultiDict]],
-            ]
-        ] = None,
-    ) -> None:
-        self.dicts = dicts or []
+    def __init__(self, dicts: Optional[Iterable[Mapping[Any, Any]]] = None,) -> None:
+        self.dicts = list(dicts) or []
 
     @classmethod
     def fromkeys(cls):
         raise TypeError(f"cannot create {cls.__name__!r} instances by fromkeys")
 
-    def __getitem__(self, key: str) -> str:
+    def __getitem__(self, key: Hashable) -> Any:
         for d in self.dicts:
             if key in d:
                 return d[key]
         raise exceptions.BadRequestKeyError(key)
 
     def get(
-        self, key: str, default: None = None, type: Optional[Type[int]] = None
-    ) -> int:
+        self,
+        key: Hashable,
+        default: T = None,
+        type: Optional[Callable[[Any], T]] = None,
+    ) -> Union[Any, T]:
         for d in self.dicts:
             if key in d:
                 if type is not None:
@@ -1541,27 +1538,27 @@ class CombinedMultiDict(ImmutableMultiDictMixin, MultiDict):  # type: ignore
         return default
 
     def getlist(
-        self, key: str, type: Optional[Type[int]] = None
-    ) -> Union[List[int], List[str]]:
+        self, key: Hashable, type: Optional[Callable[[Any], T]] = None
+    ) -> Union[List[Any], List[T]]:
         rv = []
         for d in self.dicts:
             rv.extend(d.getlist(key, type))
         return rv
 
-    def _keys_impl(self) -> Set[str]:
+    def _keys_impl(self) -> Set[Any]:
         """This function exists so __len__ can be implemented more efficiently,
         saving one list creation from an iterator.
         """
-        rv = set()
+        rv: Set[Any] = set()
         rv.update(*self.dicts)
         return rv
 
-    def keys(self) -> Set[str]:
+    def keys(self) -> Set[Any]:  # type: ignore
         return self._keys_impl()
 
-    __iter__ = keys
+    __iter__ = keys  # type: ignore
 
-    def items(self, multi: bool = False) -> Iterator[Tuple[str, str]]:
+    def items(self, multi: bool = False) -> Iterator[Tuple[Hashable, Any]]:  # type: ignore
         found = set()
         for d in self.dicts:
             for key, value in d.items(multi):
@@ -1571,16 +1568,16 @@ class CombinedMultiDict(ImmutableMultiDictMixin, MultiDict):  # type: ignore
                     found.add(key)
                     yield key, value
 
-    def values(self):
+    def values(self) -> Any:
         for _key, value in self.items():
             yield value
 
-    def lists(self):
-        rv = {}
+    def lists(self) -> List[Any]:  # type: ignore
+        rv: Any = {}
         for d in self.dicts:
             for key, values in d.lists():
                 rv.setdefault(key, []).extend(values)
-        return rv.items()
+        return list(rv.items())
 
     def listvalues(self) -> Iterator[Any]:
         return (x[1] for x in self.lists())
@@ -1615,7 +1612,7 @@ class CombinedMultiDict(ImmutableMultiDictMixin, MultiDict):  # type: ignore
     def __len__(self) -> int:
         return len(self._keys_impl())
 
-    def __contains__(self, key: str) -> bool:
+    def __contains__(self, key: object) -> bool:
         for d in self.dicts:
             if key in d:
                 return True
@@ -1659,7 +1656,7 @@ class FileMultiDict(MultiDict):
                 file = open(file, "rb")
             if filename and content_type is None:
                 content_type = (
-                    mimetypes.guess_type(filename)[0] or "application/octet-stream"
+                    mimetypes.guess_type(filename)[0] or "application/octet-stream"  # type: ignore
                 )
             value = FileStorage(file, filename, name, content_type)
 
@@ -1792,7 +1789,7 @@ class Accept(ImmutableList):
         """Check if a value matches a given accept item."""
         return item == "*" or item.lower() == value.lower()
 
-    def __getitem__(
+    def __getitem__(  # type: ignore
         self, key: Union[str, int]
     ) -> Union[float, Tuple[str, int], int, Tuple[str, float]]:
         """Besides index lookup (getting item n) you can also pass it a string
@@ -1815,9 +1812,9 @@ class Accept(ImmutableList):
                 return quality
         return 0
 
-    def __contains__(self, value: str) -> bool:
+    def __contains__(self, value: object) -> bool:
         for item, _quality in self:
-            if self._value_matches(value, item):
+            if self._value_matches(value, item):  # type: ignore
                 return True
         return False
 
@@ -1825,7 +1822,7 @@ class Accept(ImmutableList):
         pairs_str = ", ".join(f"({x!r}, {y})" for x, y in self)
         return f"{type(self).__name__}([{pairs_str}])"
 
-    def index(self, key: str) -> int:
+    def index(self, key: Any) -> int:  # type: ignore
         """Get the position of an entry or raise :exc:`ValueError`.
 
         :param key: The key to be looked up.
@@ -1875,6 +1872,7 @@ class Accept(ImmutableList):
             if self._value_matches(match, client_item):
                 # self is sorted by specificity descending, we can exit
                 return client_item, quality
+        return None
 
     def best_match(
         self, matches: List[str], default: Optional[str] = None
@@ -1900,15 +1898,15 @@ class Accept(ImmutableList):
             # better quality or same quality but more specific => better match
             if quality > best_quality or specificity > best_specificity:
                 result = server_item
-                best_quality = quality
+                best_quality = quality  # type: ignore
                 best_specificity = specificity
         return result
 
     @property
-    def best(self) -> str:
+    def best(self) -> str:  # type: ignore
         """The best match as value."""
         if self:
-            return self[0][0]
+            return self[0][0]  # type: ignore
 
 
 _mime_split_re = re.compile(r"/|(?:\s*;\s*)")
@@ -1923,14 +1921,9 @@ class MIMEAccept(Accept):
     mimetypes.
     """
 
-    def _specificity(
+    def _specificity(  # type: ignore
         self, value: str
-    ) -> Union[
-        Tuple[bool],
-        Tuple[bool, bool],
-        Tuple[bool, bool, bool],
-        Tuple[bool, bool, bool, bool],
-    ]:
+    ) -> Tuple[bool, ...]:
         return tuple(x != "*" for x in _mime_split_re.split(value))
 
     def _value_matches(self, value: str, item: str) -> bool:
@@ -2079,7 +2072,7 @@ def cache_property(key, empty, type):
     )
 
 
-class _CacheControl(UpdateDictMixin, dict):
+class _CacheControl(UpdateDictMixin, dict):  # type: ignore
     """Subclass of a dict that stores values for a Cache-Control header.  It
     has accessors for all the cache-control directives specified in RFC 2616.
     The class does not differentiate between request and response directives.
@@ -2126,7 +2119,7 @@ class _CacheControl(UpdateDictMixin, dict):
         on_update: Optional[Callable] = None,
     ) -> None:
         dict.__init__(self, values or ())
-        self.on_update = on_update
+        self.on_update = on_update  # type: ignore
         self.provided = values is not None
 
     def _get_cache_value(
@@ -2148,6 +2141,7 @@ class _CacheControl(UpdateDictMixin, dict):
                 except ValueError:
                     pass
             return value
+        return None
 
     def _set_cache_value(
         self,
@@ -2246,7 +2240,7 @@ def csp_property(key):
     )
 
 
-class ContentSecurityPolicy(UpdateDictMixin, dict):
+class ContentSecurityPolicy(UpdateDictMixin, dict):  # type: ignore
     """Subclass of a dict that stores values for a Content Security Policy
     header. It has accessors for all the level 3 policies.
 
@@ -2290,10 +2284,12 @@ class ContentSecurityPolicy(UpdateDictMixin, dict):
     worker_src = csp_property("worker-src")
 
     def __init__(
-        self, values: Union[Tuple, List[Tuple[str, str]]] = (), on_update: None = None
+        self,
+        values: Union[Tuple, List[Tuple[str, str]]] = (),
+        on_update: Optional[Callable] = None,
     ) -> None:
         dict.__init__(self, values or ())
-        self.on_update = on_update
+        self.on_update = on_update  # type: ignore
         self.provided = values is not None
 
     def _get_value(self, key: str) -> Optional[str]:
@@ -2324,7 +2320,7 @@ class ContentSecurityPolicy(UpdateDictMixin, dict):
         return f"<{type(self).__name__} {kv_str}>"
 
 
-class CallbackDict(UpdateDictMixin, dict):
+class CallbackDict(UpdateDictMixin, dict):  # type: ignore
     """A dict that calls a function passed every time something is changed.
     The function is passed the dict instance.
     """
@@ -2335,7 +2331,7 @@ class CallbackDict(UpdateDictMixin, dict):
         on_update: Optional[Callable] = None,
     ) -> None:
         dict.__init__(self, initial or ())
-        self.on_update = on_update
+        self.on_update = on_update  # type: ignore
 
     def __repr__(self):
         return f"<{type(self).__name__} {dict.__repr__(self)}>"
@@ -2474,8 +2470,8 @@ class HeaderSet(MutableSet):
         if self.on_update is not None:
             self.on_update(self)
 
-    def __contains__(self, header: str) -> bool:
-        return header.lower() in self._set
+    def __contains__(self, header: object) -> bool:
+        return header.lower() in self._set  # type: ignore
 
     def __len__(self) -> int:
         return len(self._set)
@@ -2580,8 +2576,8 @@ class ETags(Container, Iterable):
     def __iter__(self):
         return iter(self._strong)
 
-    def __contains__(self, etag: str) -> bool:
-        return self.contains(etag)
+    def __contains__(self, etag: object) -> bool:
+        return self.contains(etag)  # type: ignore
 
     def __repr__(self):
         return f"<{type(self).__name__} {str(self)!r}>"
@@ -2652,7 +2648,7 @@ class Range:
             if start is None or (end is not None and (start < 0 or start >= end)):
                 raise ValueError(f"{(start, end)} is not a valid range.")
 
-    def range_for_length(self, length: int) -> Tuple[int, int]:
+    def range_for_length(self, length: int) -> Optional[Tuple[int, int]]:
         """If the range is for bytes, the length is not None and there is
         exactly one range and it is satisfiable it returns a ``(start, stop)``
         tuple, otherwise `None`.
@@ -2666,14 +2662,16 @@ class Range:
                 start += length
         if is_byte_range_valid(start, end, length):
             return start, min(end, length)
+        return None
 
-    def make_content_range(self, length: int) -> ContentRange:
+    def make_content_range(self, length: int) -> Optional[ContentRange]:
         """Creates a :class:`~werkzeug.datastructures.ContentRange` object
         from the current range and given content length.
         """
         rng = self.range_for_length(length)
         if rng is not None:
             return ContentRange(self.units, rng[0], rng[1], length)
+        return None
 
     def to_header(self) -> str:
         """Converts the object back into an HTTP header."""
@@ -2876,7 +2874,7 @@ class Authorization(ImmutableDictMixin, dict):  # type: ignore
         return self.get("qop")
 
 
-class WWWAuthenticate(UpdateDictMixin, dict):
+class WWWAuthenticate(UpdateDictMixin, dict):  # type: ignore
     """Provides simple access to `WWW-Authenticate` headers."""
 
     #: list of keys that require quoting in the generated header
@@ -2891,7 +2889,7 @@ class WWWAuthenticate(UpdateDictMixin, dict):
         dict.__init__(self, values or ())
         if auth_type:
             self["__auth_type__"] = auth_type
-        self.on_update = on_update
+        self.on_update = on_update  # type: ignore
 
     def set_basic(self, realm: str = "authentication required") -> None:
         """Clear the auth info and enable basic auth."""
@@ -3082,7 +3080,7 @@ class FileStorage:
             # Make sure the filename is not bytes. This might happen if
             # the file was opened from the bytes API.
             if isinstance(filename, bytes):
-                filename = filename.decode(get_filesystem_encoding(), "replace")
+                filename = filename.decode(get_filesystem_encoding(), "replace")  # type: ignore
 
         self.filename = filename
         if headers is None:
@@ -3153,17 +3151,17 @@ class FileStorage:
         close_dst = False
 
         if hasattr(dst, "__fspath__"):
-            dst = fspath(dst)
+            dst = fspath(dst)  # type: ignore
 
         if isinstance(dst, str):
             dst = open(dst, "wb")
             close_dst = True
 
         try:
-            copyfileobj(self.stream, dst, buffer_size)
+            copyfileobj(self.stream, dst, buffer_size)  # type: ignore
         finally:
             if close_dst:
-                dst.close()
+                dst.close()  # type: ignore
 
     def close(self) -> None:
         """Close the underlying file if possible."""
@@ -3185,10 +3183,10 @@ class FileStorage:
             # attribute from its backing file instead.
             # https://github.com/python/cpython/pull/3249
             if hasattr(self.stream, "_file"):
-                return getattr(self.stream._file, name)
+                return getattr(self.stream._file, name)  # type: ignore
             raise
 
-    def __iter__(self) -> Union[BytesIO, StringIO]:
+    def __iter__(self) -> Iterator[Any]:
         return iter(self.stream)
 
     def __repr__(self):
