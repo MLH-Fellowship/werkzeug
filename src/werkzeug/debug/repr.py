@@ -143,7 +143,7 @@ class DebugReprGenerator:
 
     def regex_repr(self, obj: Pattern) -> str:
         pattern = repr(obj.pattern)
-        pattern = codecs.decode(pattern, "unicode-escape", "ignore") # type: ignore
+        pattern = codecs.decode(pattern, "unicode-escape", "ignore")  # type: ignore
         pattern = f"r{pattern}"
         return f're.compile(<span class="string regex">{pattern}</span>)'
 
@@ -253,9 +253,7 @@ class DebugReprGenerator:
         finally:
             self._stack.pop()
 
-    def dump_object(
-        self, obj: object
-    ) -> str:
+    def dump_object(self, obj: object) -> str:
         repr = None
         items: Optional[List[Tuple[str, str]]] = None
         if isinstance(obj, dict):

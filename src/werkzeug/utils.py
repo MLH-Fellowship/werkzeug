@@ -6,7 +6,6 @@ import pkgutil
 import re
 import sys
 import warnings
-from datetime import date
 from html.entities import name2codepoint
 from io import BytesIO
 from typing import Any
@@ -14,9 +13,8 @@ from typing import Callable
 from typing import Dict
 from typing import Iterator
 from typing import Optional
-from typing import Tuple
-from typing import Type
 from typing import TYPE_CHECKING
+from typing import Tuple
 from typing import Union
 
 from _pytest.capture import EncodedFile
@@ -562,9 +560,7 @@ def append_slash_redirect(
     return redirect(new_path, code)
 
 
-def import_string(
-    import_name: str, silent: bool = False
-) -> Any:
+def import_string(import_name: str, silent: bool = False) -> Any:
     """Imports an object based on a string.  This is useful if you want to
     use import paths as endpoints or something similar.  An import path can
     be specified either in dotted notation (``xml.sax.saxutils.escape``)
@@ -811,7 +807,6 @@ class ImportStringError(ImportError):
 
 if TYPE_CHECKING:
     from werkzeug.datastructures import Headers
-    from werkzeug.debug import DebuggedApplication
     from werkzeug.wrappers.base_request import BaseRequest
     from werkzeug.wrappers.request import Request
     from werkzeug.wrappers.response import Response

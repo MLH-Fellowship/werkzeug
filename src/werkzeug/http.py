@@ -405,9 +405,7 @@ def parse_dict_header(
     return result
 
 
-def parse_options_header(
-    value: Optional[str], multiple: bool = False
-) -> Any:
+def parse_options_header(value: Optional[str], multiple: bool = False) -> Any:
     """Parse a ``Content-Type`` like header into a tuple with the content
     type and the options:
 
@@ -895,7 +893,9 @@ def parse_date(value: Optional[str]) -> Optional[datetime]:
     return None
 
 
-def _dump_date(d: Optional[Union[float, datetime, int, struct_time]], delim: str) -> str:
+def _dump_date(
+    d: Optional[Union[float, datetime, int, struct_time]], delim: str
+) -> str:
     """Used for `http_date` and `cookie_date`."""
     if d is None:
         d = gmtime()

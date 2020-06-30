@@ -6,6 +6,8 @@ from functools import update_wrapper
 from itertools import chain
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, Iterable
 
+from werkzeug.types import WSGIEnvironment, BytesOrStr
+
 from ._internal import _encode_idna
 from ._internal import _make_encode_wrapper
 from ._internal import _to_bytes
@@ -125,12 +127,12 @@ def host_is_trusted(hostname: str, trusted_list: List[str]) -> bool:
             return False
         if ref == hostname:
             return True
-        if suffix_match and hostname.endswith(b"." + ref):
+        if suffix_match and hostname.endswith(b"." + ref):  # type: ignore
             return True
     return False
 
 
-def get_host(environ: Dict[str, Any], trusted_hosts: Optional[List[str]] = None) -> str:
+def get_host(environ: WSGIEnvironment, trusted_hosts: Optional[List[str]] = None) -> str:
     """Return the host for the given WSGI environment. This first checks
     the ``Host`` header. If it's not present, then ``SERVER_NAME`` and
     ``SERVER_PORT`` are used. The host will only contain the port if it
@@ -167,7 +169,7 @@ def get_host(environ: Dict[str, Any], trusted_hosts: Optional[List[str]] = None)
     return rv
 
 
-def get_content_length(environ: Dict[str, Any]) -> Optional[int]:
+def get_content_length(environ: WSGIEnvironment) -> Optional[int]:
     """Returns the content length from the WSGI environment as
     integer. If it's not available or chunked transfer encoding is used,
     ``None`` is returned.
@@ -185,10 +187,11 @@ def get_content_length(environ: Dict[str, Any]) -> Optional[int]:
             return max(0, int(content_length))
         except (ValueError, TypeError):
             pass
+    return None
 
 
 def get_input_stream(
-    environ: Dict[str, Any], safe_fallback: bool = True
+    environ: WSGIEnvironment, safe_fallback: bool = True
 ) -> Union[BytesIO, LimitedStream]:
     """Returns the input stream from the WSGI environment and wraps it
     in the most sensible way possible. The stream returned is not the
@@ -256,7 +259,7 @@ def get_path_info(
 
     .. versionadded:: 0.9
     """
-    path = environ.get("PATH_INFO", "").encode("latin1")
+    path = environ.get("PATH_INFO", "").encode("latin1")  # type: ignore
     return _to_str(path, charset, errors, allow_none_charset=True)
 
 
@@ -275,7 +278,7 @@ def get_script_name(
 
     .. versionadded:: 0.9
     """
-    path = environ.get("SCRIPT_NAME", "").encode("latin1")
+    path = environ.get("SCRIPT_NAME", "").encode("latin1")  # type: ignore
     return _to_str(path, charset, errors, allow_none_charset=True)
 
 
@@ -322,18 +325,18 @@ def pop_path_info(
 
     # shift multiple leading slashes over
     old_path = path
-    path = path.lstrip("/")
+    path = path.lstrip("/")  # type: ignore
     if path != old_path:
-        script_name += "/" * (len(old_path) - len(path))
+        script_name += "/" * (len(old_path) - len(path))  # type: ignore
 
     if "/" not in path:
         environ["PATH_INFO"] = ""
-        environ["SCRIPT_NAME"] = script_name + path
+        environ["SCRIPT_NAME"] = script_name + path  # type: ignore
         rv = path.encode("latin1")
     else:
         segment, path = path.split("/", 1)
         environ["PATH_INFO"] = f"/{path}"
-        environ["SCRIPT_NAME"] = script_name + segment
+        environ["SCRIPT_NAME"] = script_name + segment  # type: ignore
         rv = segment.encode("latin1")
 
     return _to_str(rv, charset, errors, allow_none_charset=True)
@@ -341,7 +344,7 @@ def pop_path_info(
 
 def peek_path_info(
     environ: Dict[str, str], charset: Optional[str] = "utf-8", errors: str = "replace"
-) -> Union[str, bytes]:
+) -> Optional[Union[str, bytes]]:
     """Returns the next segment on the `PATH_INFO` or `None` if there
     is none.  Works like :func:`pop_path_info` without modifying the
     environment:
@@ -367,6 +370,7 @@ def peek_path_info(
         return _to_str(
             segments[0].encode("latin1"), charset, errors, allow_none_charset=True
         )
+    return None
 
 
 def extract_path_info(
@@ -488,7 +492,7 @@ class ClosingIterator:
     """
 
     def __init__(
-        self, iterable: Iterable, callbacks: Optional[Callable] = None
+        self, iterable: Iterable, callbacks: Optional[Union[Callable, List[Callable]]] = None
     ) -> None:
         iterator = iter(iterable)
         self._next = partial(next, iterator)
@@ -506,7 +510,7 @@ class ClosingIterator:
     def __iter__(self) -> ClosingIterator:
         return self
 
-    def __next__(self) -> Union[str, bytes]:
+    def __next__(self) -> Any:
         return self._next()
 
     def close(self) -> None:
@@ -534,7 +538,7 @@ def wrap_file(
     :param file: a :class:`file`-like object with a :meth:`~file.read` method.
     :param buffer_size: number of bytes for one iteration.
     """
-    return environ.get("wsgi.file_wrapper", FileWrapper)(file, buffer_size)
+    return environ.get("wsgi.file_wrapper", FileWrapper)(file, buffer_size)  # type: ignore
 
 
 class FileWrapper:
@@ -610,7 +614,7 @@ class _RangeWrapper:
 
     def __init__(
         self,
-        iterable: Union[FileWrapper, List[bytes]],
+        iterable: Iterable,
         start_byte: int = 0,
         byte_range: Optional[int] = None,
     ) -> None:
@@ -621,7 +625,7 @@ class _RangeWrapper:
         if byte_range is not None:
             self.end_byte = self.start_byte + self.byte_range
         self.read_length = 0
-        self.seekable = hasattr(iterable, "seekable") and iterable.seekable()
+        self.seekable = hasattr(iterable, "seekable") and iterable.seekable()  # type: ignore
         self.end_reached = False
 
     def __iter__(self) -> _RangeWrapper:
@@ -636,11 +640,11 @@ class _RangeWrapper:
             self.end_reached = True
             raise
 
-    def _first_iteration(self) -> Union[Tuple[None, int], Tuple[bytes, int]]:
+    def _first_iteration(self) -> Tuple[Optional[bytes], int]:
         chunk = None
         if self.seekable:
-            self.iterable.seek(self.start_byte)
-            self.read_length = self.iterable.tell()
+            self.iterable.seek(self.start_byte)  # type: ignore
+            self.read_length = self.iterable.tell()  # type: ignore
             contextual_read_length = self.read_length
         else:
             while self.read_length <= self.start_byte:
@@ -795,7 +799,7 @@ def make_chunk_iter(
     limit: Optional[int] = None,
     buffer_size: int = 10 * 1024,
     cap_at_buffer: bool = False,
-) -> Iterator[Union[str, bytes]]:
+) -> Iterator[BytesOrStr]:
     """Works like :func:`make_line_iter` but accepts a separator
     which divides chunks.  If you want newline based processing
     you should use :func:`make_line_iter` instead as it
@@ -830,19 +834,19 @@ def make_chunk_iter(
     if isinstance(first_item, str):
         separator = _to_str(separator)
         _split = re.compile(f"({re.escape(separator)})").split
-        _join = "".join
+        _join: Callable = "".join
     else:
-        separator = _to_bytes(separator)
-        _split = re.compile(b"(" + re.escape(separator) + b")").split
+        separator = _to_bytes(separator)  # type: ignore
+        _split = re.compile(b"(" + re.escape(separator) + b")").split  # type: ignore
         _join = b"".join
 
-    buffer = []
+    buffer: List[Any] = []
     while 1:
         new_data = next(_iter, "")
         if not new_data:
             break
-        chunks = _split(new_data)
-        new_buf = []
+        chunks = _split(new_data)  # type: ignore
+        new_buf: List[Any] = []
         buf_size = 0
         for item in chain(buffer, chunks):
             if item == separator:
@@ -908,7 +912,7 @@ class LimitedStream(io.IOBase):
         self._pos = 0
         self.limit = limit
 
-    def __iter__(self) -> LimitedStream:
+    def __iter__(self) -> LimitedStream:  # type: ignore
         return self
 
     @property
@@ -969,7 +973,7 @@ class LimitedStream(io.IOBase):
         self._pos += len(read)
         return read
 
-    def readline(self, size: Optional[int] = None) -> Union[str, bytes]:
+    def readline(self, size: Optional[int] = None) -> BytesOrStr:  # type: ignore
         """Reads one line from the stream."""
         if self._pos >= self.limit:
             return self.on_exhausted()
@@ -986,7 +990,7 @@ class LimitedStream(io.IOBase):
         self._pos += len(line)
         return line
 
-    def readlines(self, size: Optional[int] = None) -> List[bytes]:
+    def readlines(self, size: Optional[int] = None) -> List[str]:  # type: ignore
         """Reads a file into a list of strings.  It calls :meth:`readline`
         until the file is read to the end.  It does support the optional
         `size` argument if the underlying stream supports it for
@@ -1006,7 +1010,7 @@ class LimitedStream(io.IOBase):
             result.append(self.readline(size))
             if size is not None:
                 last_pos = self._pos
-        return result
+        return result  # type: ignore
 
     def tell(self) -> int:
         """Returns the position of the stream.
@@ -1015,11 +1019,11 @@ class LimitedStream(io.IOBase):
         """
         return self._pos
 
-    def __next__(self) -> str:
+    def __next__(self) -> str:  # type: ignore
         line = self.readline()
         if not line:
             raise StopIteration()
-        return line
+        return line  # type: ignore
 
     def readable(self) -> bool:
         return True
