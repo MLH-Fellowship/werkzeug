@@ -940,7 +940,7 @@ class Headers:
 
     def __getitem__(
         self, key: Union[str, int, slice], _get_mode: bool = False
-    ) -> Union[Tuple[str, str], Headers, str, int]:
+    ) -> Any:
         if not _get_mode:
             if isinstance(key, int):
                 return self._list[key]
@@ -1003,7 +1003,7 @@ class Headers:
         except KeyError:
             return default
         if as_bytes:
-            rv = rv.encode("latin1")  # type: ignore
+            rv = rv.encode("latin1")
         if type is None:
             return rv
         try:

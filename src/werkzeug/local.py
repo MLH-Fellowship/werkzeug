@@ -141,7 +141,7 @@ class LocalStack:
         """Pushes a new item to the stack"""
         rv = getattr(self._local, "stack", None)
         if rv is None:
-            self._local.stack = rv = []
+            self._local.stack = rv = []  # type: ignore
         rv.append(obj)
         return rv
 
@@ -196,7 +196,7 @@ class LocalManager:
         elif isinstance(locals, Local):
             self.locals = [locals]
         else:
-            self.locals = list(locals)
+            self.locals = list(locals)  # type: ignore
         if ident_func is not None:
             self.ident_func = ident_func
             for local in self.locals:
@@ -292,7 +292,7 @@ class LocalProxy:
     __slots__ = ("__local", "__dict__", "__name__", "__wrapped__")
 
     def __init__(
-        self, local: Union[Callable, partial, Local], name: Optional[str] = None
+        self, local: Union[Any, LocalProxy, LocalStack], name: Optional[str] = None
     ) -> None:
         object.__setattr__(self, "_LocalProxy__local", local)
         object.__setattr__(self, "__name__", name)
@@ -303,7 +303,7 @@ class LocalProxy:
 
     def _get_current_object(
         self,
-    ) -> Union[List[List[Any]], str, List[int], Tuple[int, int], int]:
+    ) -> object:
         """Return the current object.  This is useful if you want the real
         object behind the proxy at a time for performance reasons or because
         you want to pass the object into a different context.
@@ -329,7 +329,7 @@ class LocalProxy:
             return f"<{type(self).__name__} unbound>"
         return repr(obj)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         try:
             return bool(self._get_current_object())
         except RuntimeError:
@@ -341,13 +341,13 @@ class LocalProxy:
         except RuntimeError:
             return []
 
-    def __getattr__(self, name: str) -> Union[Callable, str, int]:
+    def __getattr__(self, name: str) -> Any:
         if name == "__members__":
             return dir(self._get_current_object())
         return getattr(self._get_current_object(), name)
 
-    def __setitem__(self, key: slice, value: List[int]) -> None:
-        self._get_current_object()[key] = value
+    def __setitem__(self, key: Any, value: Any) -> None:
+        self._get_current_object()[key] = value  # type: ignore
 
     def __delitem__(self, key):
         del self._get_current_object()[key]

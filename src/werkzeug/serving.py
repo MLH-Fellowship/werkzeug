@@ -419,7 +419,7 @@ def generate_adhoc_ssl_pair(cn: None = None) -> Tuple[_Certificate, _RSAPrivateK
 
     # pretty damn sure that this is not actually accepted by anyone
     if cn is None:
-        cn = "*"
+        cn = "*"  # type: ignore
 
     subject = x509.Name(
         [

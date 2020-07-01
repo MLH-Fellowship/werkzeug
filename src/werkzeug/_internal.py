@@ -71,8 +71,8 @@ _missing = _Missing()
 
 
 def _make_encode_wrapper(
-    reference: Optional[Union[str, bytes]]
-) -> Callable[[str], Union[str, bytes]]:
+    reference: Optional[AnyStr]
+) -> Callable[[str], AnyStr]:
     """Create a function that will be called with a string argument. If
     the reference is bytes, values will be encoded to bytes.
     """

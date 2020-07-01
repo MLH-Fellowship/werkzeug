@@ -4,7 +4,7 @@ import re
 from functools import partial
 from functools import update_wrapper
 from itertools import chain
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, Iterable
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, Iterable, IO, AnyStr, cast, Generator
 
 from werkzeug.types import WSGIEnvironment, BytesOrStr
 
@@ -682,8 +682,8 @@ class _RangeWrapper:
 
 
 def _make_chunk_iter(
-    stream: Any, limit: Optional[int], buffer_size: int
-) -> Iterator[Union[str, bytes]]:
+    stream: Union[IO[AnyStr], Iterator[AnyStr]], limit: Optional[int], buffer_size: int
+) -> Iterator[AnyStr]:
     """Helper for the line and chunk iter functions."""
     if isinstance(stream, (bytes, bytearray, str)):
         raise TypeError(
@@ -695,8 +695,8 @@ def _make_chunk_iter(
                 yield item
         return
     if not isinstance(stream, LimitedStream) and limit is not None:
-        stream = LimitedStream(stream, limit)
-    _read = stream.read
+        stream = LimitedStream(stream, limit)  # type: ignore
+    _read = stream.read  # type: ignore
     while 1:
         item = _read(buffer_size)
         if not item:
@@ -705,11 +705,11 @@ def _make_chunk_iter(
 
 
 def make_line_iter(
-    stream: Union[BytesIO, LimitedStream, List[str], StringIO],
+    stream: Union[Iterator[AnyStr], IO],
     limit: Optional[int] = None,
     buffer_size: int = 10 * 1024,
     cap_at_buffer: bool = False,
-) -> Iterator[Union[str, bytes]]:
+) -> Iterator[AnyStr]:
     """Safely iterates line-based over an input stream.  If the input stream
     is not a :class:`LimitedStream` the `limit` parameter is mandatory.
 
@@ -741,9 +741,9 @@ def make_line_iter(
                           that the buffer size might be exhausted by a factor
                           of two however.
     """
-    _iter = _make_chunk_iter(stream, limit, buffer_size)
+    _iter: Iterator[AnyStr] = _make_chunk_iter(stream, limit, buffer_size)
 
-    first_item = next(_iter, "")
+    first_item: AnyStr = next(_iter, "")  # type: ignore
     if not first_item:
         return
 
@@ -755,9 +755,9 @@ def make_line_iter(
 
     _iter = chain((first_item,), _iter)
 
-    def _iter_basic_lines():
+    def _iter_basic_lines() -> Iterator[AnyStr]:
         _join = empty.join
-        buffer = []
+        buffer: List[Any] = []
         while 1:
             new_data = next(_iter, "")
             if not new_data:
@@ -795,12 +795,12 @@ def make_line_iter(
 
 
 def make_chunk_iter(
-    stream: Any,
+    stream: Union[Iterator[AnyStr], IO],
     separator: str,
     limit: Optional[int] = None,
     buffer_size: int = 10 * 1024,
     cap_at_buffer: bool = False,
-) -> Iterator[BytesOrStr]:
+) -> Iterator[str]:
     """Works like :func:`make_line_iter` but accepts a separator
     which divides chunks.  If you want newline based processing
     you should use :func:`make_line_iter` instead as it
@@ -846,7 +846,7 @@ def make_chunk_iter(
         new_data = next(_iter, "")
         if not new_data:
             break
-        chunks = _split(new_data)  # type: ignore
+        chunks = _split(new_data)
         new_buf: List[Any] = []
         buf_size = 0
         for item in chain(buffer, chunks):
@@ -906,7 +906,7 @@ class LimitedStream(io.IOBase):
     """
 
     def __init__(
-        self, stream: Union[BytesIO, BufferedRandom, StringIO], limit: int
+        self, stream: Union[IO], limit: int
     ) -> None:
         self._read = stream.read
         self._readline = stream.readline

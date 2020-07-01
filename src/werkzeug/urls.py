@@ -19,7 +19,7 @@ from typing import (
     Type,
     Union,
     Dict,
-    AnyStr,
+    AnyStr, IO, BinaryIO,
 )
 from typing import FrozenSet
 
@@ -465,9 +465,9 @@ def url_parse(
     is_text_based = isinstance(url, str)
 
     if scheme is None:
-        scheme = s("")  # type: ignore
+        scheme = s("")
     netloc = query = fragment = s("")
-    i = url.find(s(":"))  # type: ignore
+    i = url.find(s(":"))
     if i > 0 and _scheme_re.match(_to_str(url[:i], errors="replace")):
         # make sure "iri" is not actually a port number (in which case
         # "scheme" is really part of the path)
@@ -479,19 +479,19 @@ def url_parse(
     if url[:2] == s("//"):
         delim = len(url)
         for c in s("/?#"):
-            wdelim = url.find(c, 2)  # type: ignore
+            wdelim = url.find(c, 2)
             if wdelim >= 0:
                 delim = min(delim, wdelim)
         netloc, url = url[2:delim], url[delim:]
-        if (s("[") in netloc and s("]") not in netloc) or (  # type: ignore
-            s("]") in netloc and s("[") not in netloc  # type: ignore
+        if (s("[") in netloc and s("]") not in netloc) or (
+            s("]") in netloc and s("[") not in netloc
         ):
             raise ValueError("Invalid IPv6 URL")
 
-    if allow_fragments and s("#") in url:  # type: ignore
-        url, fragment = url.split(s("#"), 1)  # type: ignore
-    if s("?") in url:  # type: ignore
-        url, query = url.split(s("?"), 1)  # type: ignore
+    if allow_fragments and s("#") in url:
+        url, fragment = url.split(s("#"), 1)
+    if s("?") in url:
+        url, query = url.split(s("?"), 1)
 
     result_type = URL if is_text_based else BytesURL
     return result_type(scheme, netloc, url, query, fragment)
@@ -598,18 +598,18 @@ def url_unparse(components: Tuple[AnyStr, ...]) -> str:
     # what browsers seem to do.  This also allows us to ignore a schema
     # register for netloc utilization or having to differentiate between
     # empty and missing netloc.
-    if netloc or (scheme and path.startswith(s("/"))):  # type: ignore
+    if netloc or (scheme and path.startswith(s("/"))):
         if path and path[:1] != s("/"):
-            path = s("/") + path  # type: ignore
-        url = s("//") + (netloc or s("")) + path  # type: ignore
+            path = s("/") + path
+        url = s("//") + (netloc or s("")) + path
     elif path:
-        url += path  # type: ignore
+        url += path
     if scheme:
-        url = scheme + s(":") + url  # type: ignore
+        url = scheme + s(":") + url
     if query:
-        url = url + s("?") + query  # type: ignore
+        url = url + s("?") + query
     if fragment:
-        url = url + s("#") + fragment  # type: ignore
+        url = url + s("#") + fragment
     return url  # type: ignore
 
 
@@ -852,7 +852,7 @@ def url_decode(
 
 
 def url_decode_stream(
-    stream: Union[BytesIO, LimitedStream, str],
+    stream: BinaryIO,
     charset: str = "utf-8",
     decode_keys: None = None,
     include_empty: bool = True,
@@ -922,13 +922,13 @@ def _url_decode_impl(
             continue
         s = _make_encode_wrapper(pair)
         equal = s("=")
-        if equal in pair:  # type: ignore
-            key, value = pair.split(equal, 1)  # type: ignore
+        if equal in pair:
+            key, value = pair.split(equal, 1)
         else:
             if not include_empty:
                 continue
             key = pair
-            value = s("")  # type: ignore
+            value = s("")
         key = url_unquote_plus(key, charset, errors)  # type: ignore
         yield key, url_unquote_plus(value, charset, errors)  # type: ignore
 
