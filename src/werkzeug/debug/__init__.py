@@ -23,7 +23,7 @@ from .console import Console
 from .tbtools import get_current_traceback
 from .tbtools import render_console_html
 from io import BytesIO
-from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, Tuple, Union, Hashable
 
 # A week
 PIN_TIME = 60 * 60 * 24 * 7
@@ -38,7 +38,7 @@ def hash_pin(pin):
 _machine_id = None
 
 
-def get_machine_id() -> None:
+def get_machine_id() -> Any:
     global _machine_id
 
     if _machine_id is not None:
@@ -248,8 +248,8 @@ class DebuggedApplication:
             console_init_func = None
         self.app = app
         self.evalex = evalex
-        self.frames = {}
-        self.tracebacks = {}
+        self.frames: Dict[Hashable, Any] = {}
+        self.tracebacks: Dict[Hashable, Any] = {}
         self.request_key = request_key
         self.console_path = console_path
         self.console_init_func = console_init_func
