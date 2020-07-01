@@ -112,9 +112,9 @@ class SharedDataMiddleware:
         self.cache_timeout = cache_timeout
 
         if hasattr(exports, "items"):
-            exports = exports.items()
+            exports = exports.items()  # type: ignore
 
-        for key, value in exports:
+        for key, value in exports:  # type: ignore
             if isinstance(value, tuple):
                 loader = self.get_package_loader(*value)
             elif isinstance(value, str):
@@ -157,7 +157,7 @@ class SharedDataMiddleware:
 
         if hasattr(provider, "get_resource_reader"):
             # Python 3
-            reader = provider.get_resource_reader(package)
+            reader = provider.get_resource_reader(package)  # type: ignore
 
             def loader(path):
                 if path is None:
@@ -188,7 +188,7 @@ class SharedDataMiddleware:
 
         else:
             # Python 3.6
-            package_filename = provider.get_filename(package)
+            package_filename = provider.get_filename(package)  # type: ignore
             is_filesystem = os.path.exists(package_filename)
             root = os.path.join(os.path.dirname(package_filename), package_path)
 
@@ -230,17 +230,17 @@ class SharedDataMiddleware:
 
     def generate_etag(self, mtime: datetime, file_size: int, real_filename: str) -> str:
         if not isinstance(real_filename, bytes):
-            real_filename = real_filename.encode(get_filesystem_encoding())
+            real_filename = real_filename.encode(get_filesystem_encoding())  # type: ignore
 
         timestamp = mktime(mtime.timetuple())
-        checksum = adler32(real_filename) & 0xFFFFFFFF
+        checksum = adler32(real_filename) & 0xFFFFFFFF  # type: ignore
         return f"wzsdm-{timestamp}-{file_size}-{checksum}"
 
     def __call__(
         self,
         environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
         start_response: Callable,
-    ) -> FileWrapper:
+    ) -> Union[FileWrapper, list]:
         path = get_path_info(environ)
 
         file_loader = None
@@ -255,7 +255,7 @@ class SharedDataMiddleware:
             if not search_path.endswith("/"):
                 search_path += "/"
 
-            if path.startswith(search_path):
+            if path.startswith(search_path):  # type: ignore
                 real_filename, file_loader = loader(path[len(search_path) :])
 
                 if file_loader is not None:
