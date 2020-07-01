@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
-from typing import Dict, Optional, TYPE_CHECKING
-
-from werkzeug.types import WSGIEnvironment
+from typing import Dict
+from typing import Optional
 
 from ..datastructures import CallbackDict
 from ..http import dump_age
@@ -22,9 +21,7 @@ from ..utils import environ_property
 from ..utils import get_content_type
 from ..utils import header_property
 from ..wsgi import get_content_length
-
-if TYPE_CHECKING:
-    from ..datastructures import Headers
+from werkzeug.types import WSGIEnvironment
 
 
 class CommonRequestDescriptorsMixin:
@@ -144,7 +141,6 @@ class CommonResponseDescriptorsMixin:
     """
 
     environ = WSGIEnvironment
-    headers = Headers
 
     @property
     def mimetype(self):

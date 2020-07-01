@@ -20,7 +20,7 @@ from ._internal import _cookie_quote
 from ._internal import _make_cookie_domain
 from ._internal import _to_bytes
 from ._internal import _to_str
-from werkzeug.types import BytesOrStr
+from werkzeug.types import BytesOrStr, T
 
 if TYPE_CHECKING:
     from io import BytesIO
@@ -517,8 +517,8 @@ def parse_accept_header(
 def parse_cache_control_header(
     value: Optional[str],
     on_update: Optional[Callable] = None,
-    cls: Optional[Union[Type[ResponseCacheControl], Type[RequestCacheControl]]] = None,
-) -> Union[RequestCacheControl, ResponseCacheControl]:
+    cls: Optional[Type[T]] = None,
+) -> T:
     """Parse a cache control header.  The RFC differs between response and
     request cache control, this method does not.  It's your responsibility
     to not use the wrong control statements.
@@ -536,10 +536,10 @@ def parse_cache_control_header(
     :return: a `cls` object.
     """
     if cls is None:
-        cls = RequestCacheControl
+        cls = RequestCacheControl  # type: ignore
     if not value:
-        return cls(None, on_update)
-    return cls(parse_dict_header(value), on_update)
+        return cls(None, on_update)  # type: ignore
+    return cls(parse_dict_header(value), on_update)  # type: ignore
 
 
 def parse_csp_header(

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from werkzeug.types import WSGIEnvironment
+
 from .._internal import _get_environ
 from ..datastructures import ContentRange
 from ..datastructures import RequestCacheControl
-from ..datastructures import ResponseCacheControl
 from ..http import generate_etag
 from ..http import http_date
 from ..http import is_resource_modified
@@ -20,7 +21,7 @@ from ..utils import header_property
 from ..wrappers.base_response import _clean_accept_ranges
 from ..wsgi import _RangeWrapper
 from io import BytesIO
-from typing import Dict, Optional, Tuple, Union, TYPE_CHECKING
+from typing import Dict, Optional, Tuple, Union, TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from werkzeug.datastructures import ResponseCacheControl
@@ -99,6 +100,10 @@ class ETagResponseMixin:
     response class does not do that.
     """
 
+    headers: dict
+    status_code: int
+    response: Any
+
     @property
     def cache_control(self) -> ResponseCacheControl:
         """The Cache-Control general-header field is used to specify
@@ -140,9 +145,9 @@ class ETagResponseMixin:
 
     def _process_range_request(
         self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
+        environ: WSGIEnvironment,
         complete_length: Optional[int] = None,
-        accept_ranges: Optional[str] = None,
+        accept_ranges: Optional[Union[str, bool]] = None,
     ) -> bool:
         """Handle Range Request related headers (RFC7233).  If `Accept-Ranges`
         header is valid, and Range Request is processable, we set the headers
@@ -232,7 +237,7 @@ class ETagResponseMixin:
             # wsgiref.
             if "date" not in self.headers:
                 self.headers["Date"] = http_date()
-            accept_ranges = _clean_accept_ranges(accept_ranges)
+            accept_ranges = _clean_accept_ranges(accept_ranges)  # type: ignore
             is206 = self._process_range_request(environ, complete_length, accept_ranges)
             if not is206 and not is_resource_modified(
                 environ,
@@ -245,18 +250,18 @@ class ETagResponseMixin:
                 else:
                     self.status_code = 304
             if (
-                self.automatically_set_content_length
+                self.automatically_set_content_length  # type: ignore
                 and "content-length" not in self.headers
             ):
-                length = self.calculate_content_length()
+                length = self.calculate_content_length()  # type: ignore
                 if length is not None:
                     self.headers["Content-Length"] = length
-        return self
+        return self  # type: ignore
 
     def add_etag(self, overwrite: bool = False, weak: bool = False) -> None:
         """Add an etag for the current response if there is none yet."""
         if overwrite or "etag" not in self.headers:
-            self.set_etag(generate_etag(self.get_data()), weak)
+            self.set_etag(generate_etag(self.get_data()), weak)  # type: ignore
 
     def set_etag(self, etag: str, weak: bool = False) -> None:
         """Set the etag, and override the old one if there was one."""
