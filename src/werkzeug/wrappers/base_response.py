@@ -3,7 +3,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from itertools import chain
-from typing import Any
+from typing import Any, Type, Iterable
 from typing import Callable
 from typing import Dict
 from typing import Iterator
@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 from _pytest.capture import EncodedFile
+from werkzeug.types import T
 
 from .._internal import _to_bytes
 from .._internal import _to_str
@@ -42,7 +43,7 @@ def _run_wsgi_app(*args) -> Tuple[chain, str, Headers]:
     imported unless required.  DO NOT USE!
     """
     global _run_wsgi_app
-    from ..test import run_wsgi_app as _run_wsgi_app
+    from ..test import run_wsgi_app as _run_wsgi_app  # type: ignore
 
     return _run_wsgi_app(*args)
 
@@ -220,7 +221,7 @@ class BaseResponse:
         self.status = status
 
         self.direct_passthrough = direct_passthrough
-        self._on_close = []
+        self._on_close: List[Callable] = []
 
         # we set the response after the headers so that if a class changes
         # the charset attribute, the data is set in the correct charset.
@@ -251,15 +252,15 @@ class BaseResponse:
 
     @classmethod
     def force_type(
-        cls,
-        response: Union[RequestRedirect, Callable, Response, NotFound],
+        cls: Type[T],
+        response: Any,
         environ: Optional[
             Union[
                 Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
                 Request,
             ]
         ] = None,
-    ) -> Response:
+    ) -> T:
         """Enforce that the WSGI response is a response object of the current
         type.  Werkzeug will use the :class:`BaseResponse` internally in many
         situations like the exceptions.  If you call :meth:`get_response` on an
@@ -316,7 +317,7 @@ class BaseResponse:
         :param buffered: set to `True` to enforce buffering.
         :return: a response object.
         """
-        return cls(*_run_wsgi_app(app, environ, buffered))
+        return cls(*_run_wsgi_app(app, environ, buffered))  # type: ignore
 
     @property
     def status_code(self):
@@ -384,7 +385,7 @@ class BaseResponse:
         self._ensure_sequence()
         rv = b"".join(self.iter_encoded())
         if as_text:
-            rv = rv.decode(self.charset)
+            rv = rv.decode(self.charset)  # type: ignore
         return rv
 
     def set_data(self, value: Union[str, bytes]) -> None:
@@ -573,7 +574,7 @@ class BaseResponse:
            Can now be used in a with statement.
         """
         if hasattr(self.response, "close"):
-            self.response.close()
+            self.response.close()  # type: ignore
         for func in self._on_close:
             func()
 
@@ -709,11 +710,11 @@ class BaseResponse:
             or 100 <= status < 200
             or status in (204, 304)
         ):
-            iterable = ()
+            iterable: Iterable[Any] = ()
         elif self.direct_passthrough:
             if __debug__:
                 _warn_if_string(self.response)
-            return self.response
+            return self.response  # type: ignore
         else:
             iterable = self.iter_encoded()
         return ClosingIterator(iterable, self.close)
