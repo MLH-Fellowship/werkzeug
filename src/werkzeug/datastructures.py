@@ -38,7 +38,7 @@ def is_immutable(self):
     raise TypeError(f"{type(self).__name__!r} objects are immutable")
 
 
-def iter_multi_items(mapping: Mapping) -> Iterator[Any]:
+def iter_multi_items(mapping: Union[Mapping, Iterable]) -> Iterator[Any]:
     """Iterates over the items of a mapping yielding keys and values
     without dropping any from more complex structures.
     """

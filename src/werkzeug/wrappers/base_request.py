@@ -23,7 +23,7 @@ from ..wsgi import get_content_length
 from ..wsgi import get_current_url
 from ..wsgi import get_host
 from ..wsgi import get_input_stream
-from typing import Any, Callable, Dict, Optional, Union, TYPE_CHECKING
+from typing import Any, Callable, Dict, Optional, Union, TYPE_CHECKING, BinaryIO
 
 if TYPE_CHECKING:
     from tempfile import SpooledTemporaryFile
@@ -260,7 +260,7 @@ class BaseRequest:
         content_type: Optional[str],
         filename: Optional[str] = None,
         content_length: Optional[int] = None,
-    ) -> Union[SpooledTemporaryFile, BytesIO]:
+    ) -> BinaryIO:
         """Called to get a stream for the file upload.
 
         This must provide a file-like class with `read()`, `readline()`
@@ -336,7 +336,7 @@ class BaseRequest:
             )
         else:
             data = (
-                self.stream,
+                self.stream,  # type: ignore
                 self.parameter_storage_class(),
                 self.parameter_storage_class(),
             )
@@ -370,7 +370,7 @@ class BaseRequest:
             value.close()
 
     def __enter__(self) -> Request:
-        return self
+        return self  # type: ignore
 
     def __exit__(self, exc_type: None, exc_value: None, tb: None) -> None:
         self.close()
