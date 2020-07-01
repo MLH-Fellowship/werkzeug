@@ -3,6 +3,8 @@ from __future__ import annotations
 from functools import update_wrapper
 from io import BytesIO
 
+from werkzeug.types import WSGIEnvironment
+
 from .._internal import _to_str
 from .._internal import _wsgi_decoding_dance
 from ..datastructures import CombinedMultiDict
@@ -157,7 +159,7 @@ class BaseRequest:
 
     def __init__(
         self,
-        environ: Dict[str, Any],
+        environ: WSGIEnvironment,
         populate_request: bool = True,
         shallow: bool = False,
     ) -> None:

@@ -32,7 +32,7 @@ class CommonRequestDescriptorsMixin:
     .. versionadded:: 0.5
     """
 
-    environ = WSGIEnvironment
+    environ: WSGIEnvironment
 
     content_type = environ_property(
         "CONTENT_TYPE",
@@ -101,7 +101,7 @@ class CommonRequestDescriptorsMixin:
     def _parse_content_type(self) -> None:
         if not hasattr(self, "_parsed_content_type"):
             self._parsed_content_type = parse_options_header(
-                self.environ.get("CONTENT_TYPE", "")  # type: ignore
+                self.environ.get("CONTENT_TYPE", "")
             )
 
     @property
