@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING
+
+from werkzeug.types import WSGIEnvironment
 
 from ..datastructures import CallbackDict
 from ..http import dump_age
@@ -21,6 +23,9 @@ from ..utils import get_content_type
 from ..utils import header_property
 from ..wsgi import get_content_length
 
+if TYPE_CHECKING:
+    from ..datastructures import Headers
+
 
 class CommonRequestDescriptorsMixin:
     """A mixin for :class:`BaseRequest` subclasses.  Request objects that
@@ -29,6 +34,7 @@ class CommonRequestDescriptorsMixin:
 
     .. versionadded:: 0.5
     """
+    environ = WSGIEnvironment
 
     content_type = environ_property(
         "CONTENT_TYPE",
@@ -97,7 +103,7 @@ class CommonRequestDescriptorsMixin:
     def _parse_content_type(self) -> None:
         if not hasattr(self, "_parsed_content_type"):
             self._parsed_content_type = parse_options_header(
-                self.environ.get("CONTENT_TYPE", "")
+                self.environ.get("CONTENT_TYPE", "")  # type: ignore
             )
 
     @property
@@ -135,6 +141,8 @@ class CommonResponseDescriptorsMixin:
     mix this class in will automatically get descriptors for a couple of
     HTTP headers with automatic type conversion.
     """
+    environ = WSGIEnvironment
+    headers = Headers
 
     @property
     def mimetype(self):
@@ -159,7 +167,7 @@ class CommonResponseDescriptorsMixin:
         def on_update(d):
             self.headers["Content-Type"] = dump_options_header(self.mimetype, d)
 
-        d = parse_options_header(self.headers.get("content-type", ""))[1]
+        d = parse_options_header(self.headers.get("content-type", ""))[1]  # type: ignore
         return CallbackDict(d, on_update)
 
     location = header_property(
