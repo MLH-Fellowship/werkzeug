@@ -938,9 +938,7 @@ class Headers:
             else:
                 self.extend(defaults)
 
-    def __getitem__(
-        self, key: Union[str, int, slice], _get_mode: bool = False
-    ) -> Any:
+    def __getitem__(self, key: Union[str, int, slice], _get_mode: bool = False) -> Any:
         if not _get_mode:
             if isinstance(key, int):
                 return self._list[key]

@@ -17,8 +17,6 @@ from typing import TYPE_CHECKING
 from typing import Tuple
 from typing import Union
 
-from _pytest.capture import EncodedFile
-
 from ._internal import _DictAccessorProperty
 from ._internal import _missing
 from ._internal import _parse_signature
@@ -543,8 +541,7 @@ def redirect(location: str, code: int = 302, Response: None = None) -> Response:
 
 
 def append_slash_redirect(
-    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
-    code: int = 301,
+    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]], code: int = 301,
 ) -> Response:
     """Redirects to the same URL but with a slash appended.  The behavior
     of this function is undefined if the path ends with a slash already.

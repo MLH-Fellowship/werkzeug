@@ -20,9 +20,8 @@ from warnings import warn
 from ..datastructures import Headers
 from ..http import is_entity_header
 from ..wsgi import FileWrapper
-from _pytest.capture import EncodedFile
 from io import BytesIO
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union, IO
 
 
 class WSGIWarning(Warning):
@@ -33,7 +32,7 @@ class HTTPWarning(Warning):
     """Warning class for HTTP warnings."""
 
 
-def check_string(context: str, obj: str, stacklevel: int = 3) -> None:
+def check_string(context: str, obj: Any, stacklevel: int = 3) -> None:
     if type(obj) is not str:
         warn(f"'{context}' requires strings, got '{type(obj).__name__}'", WSGIWarning)
 
@@ -91,7 +90,7 @@ class InputStream:
 
 
 class ErrorStream:
-    def __init__(self, stream: EncodedFile) -> None:
+    def __init__(self, stream: IO) -> None:
         self._stream = stream
 
     def write(self, s):
@@ -228,8 +227,7 @@ class LintMiddleware:
         self.app = app
 
     def check_environ(
-        self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        self, environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     ) -> None:
         if type(environ) is not dict:
             warn(

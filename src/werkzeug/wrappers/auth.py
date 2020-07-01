@@ -16,6 +16,7 @@ class AuthorizationMixin:
     value of the `Authorization` header as
     :class:`~werkzeug.datastructures.Authorization` object.
     """
+
     environ: WSGIEnvironment
 
     @cached_property
@@ -27,6 +28,7 @@ class AuthorizationMixin:
 
 class WWWAuthenticateMixin:
     """Adds a :attr:`www_authenticate` property to a response object."""
+
     environ: WSGIEnvironment
 
     @property

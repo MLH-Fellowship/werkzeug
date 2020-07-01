@@ -27,7 +27,6 @@ from ..security import safe_join
 from ..utils import get_content_type
 from ..wsgi import get_path_info
 from ..wsgi import wrap_file
-from _pytest.capture import EncodedFile
 from typing import Callable, Dict, List, Optional, Tuple, Union
 from werkzeug.wsgi import FileWrapper
 
@@ -238,7 +237,7 @@ class SharedDataMiddleware:
 
     def __call__(
         self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
         start_response: Callable,
     ) -> Union[FileWrapper, list]:
         path = get_path_info(environ)

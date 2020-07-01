@@ -14,9 +14,8 @@ from .._internal import _to_str
 from ..filesystem import get_filesystem_encoding
 from ..utils import cached_property
 from .console import Console
-from _pytest.capture import EncodedFile
 from io import StringIO
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, TextIO
 
 _coding_re = re.compile(br"coding[:=]\s*([-\w.]+)")
 _line_re = re.compile(br"^(.*?)$", re.MULTILINE)
@@ -255,7 +254,7 @@ class Traceback:
         """String representation of the final exception."""
         return self.groups[-1].exception
 
-    def log(self, logfile: Optional[Union[EncodedFile, StringIO]] = None) -> None:
+    def log(self, logfile: Optional[Union[TextIO]] = None) -> None:
         """Log the ASCII traceback into a file object."""
         if logfile is None:
             logfile = sys.stderr

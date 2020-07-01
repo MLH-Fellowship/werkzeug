@@ -22,7 +22,6 @@ from ..wrappers import BaseResponse as Response
 from .console import Console
 from .tbtools import get_current_traceback
 from .tbtools import render_console_html
-from _pytest.capture import EncodedFile
 from io import BytesIO
 from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Union
 
@@ -448,7 +447,7 @@ class DebuggedApplication:
 
     def __call__(
         self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
         start_response: Callable,
     ) -> Iterator[Any]:
         """Dispatch the requests."""

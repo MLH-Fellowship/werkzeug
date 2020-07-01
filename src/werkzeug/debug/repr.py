@@ -23,8 +23,6 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from _pytest.capture import EncodedFile
-
 missing: Any = object()
 _paragraph_re = re.compile(r"(?:\r\n|\r|\n){2,}")
 RegexType: Any = type(_paragraph_re)
@@ -200,7 +198,7 @@ class DebugReprGenerator:
         return _add_subclass_info("".join(buf), d, dict)
 
     def object_repr(
-        self, obj: Optional[Union[Type[dict], EncodedFile, Callable, Type[list]]]
+        self, obj: Optional[Union[Type[dict], Callable, Type[list]]]
     ) -> str:
         r = repr(obj)
         return f'<span class="object">{escape(r)}</span>'

@@ -19,7 +19,9 @@ from typing import (
     Type,
     Union,
     Dict,
-    AnyStr, IO, BinaryIO,
+    AnyStr,
+    IO,
+    BinaryIO,
 )
 from typing import FrozenSet
 

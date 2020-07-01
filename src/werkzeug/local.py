@@ -301,9 +301,7 @@ class LocalProxy:
             # LocalManager: mark it as a wrapped function.
             object.__setattr__(self, "__wrapped__", local)
 
-    def _get_current_object(
-        self,
-    ) -> object:
+    def _get_current_object(self,) -> object:
         """Return the current object.  This is useful if you want the real
         object behind the proxy at a time for performance reasons or because
         you want to pass the object into a different context.

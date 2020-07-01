@@ -19,7 +19,6 @@ from ..utils import cached_property
 from ..utils import header_property
 from ..wrappers.base_response import _clean_accept_ranges
 from ..wsgi import _RangeWrapper
-from _pytest.capture import EncodedFile
 from io import BytesIO
 from typing import Dict, Optional, Tuple, Union, TYPE_CHECKING
 
@@ -123,8 +122,7 @@ class ETagResponseMixin:
             self.response = _RangeWrapper(self.response, start, length)
 
     def _is_range_request_processable(
-        self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        self, environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     ) -> bool:
         """Return ``True`` if `Range` header is present and if underlying
         resource is considered unchanged when compared with `If-Range` header.
@@ -142,7 +140,7 @@ class ETagResponseMixin:
 
     def _process_range_request(
         self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
         complete_length: Optional[int] = None,
         accept_ranges: Optional[str] = None,
     ) -> bool:
@@ -186,9 +184,7 @@ class ETagResponseMixin:
 
     def make_conditional(
         self,
-        request_or_environ: Dict[
-            str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]
-        ],
+        request_or_environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
         accept_ranges: bool = False,
         complete_length: Optional[int] = None,
     ) -> Response:

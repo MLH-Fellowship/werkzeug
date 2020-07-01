@@ -27,7 +27,11 @@ from typing import (
     Tuple,
     Type,
     Union,
-    TYPE_CHECKING, BinaryIO, IO, AnyStr, Iterable,
+    TYPE_CHECKING,
+    BinaryIO,
+    IO,
+    AnyStr,
+    Iterable,
 )
 
 if TYPE_CHECKING:
@@ -398,7 +402,9 @@ class MultiPartParser:
             return filename.split("\\")[-1]
         return filename
 
-    def _find_terminator(self, iterator: Union[Iterator[AnyStr], chain[AnyStr]]) -> Union[bytes, str]:
+    def _find_terminator(
+        self, iterator: Union[Iterator[AnyStr], chain[AnyStr]]
+    ) -> Union[bytes, str]:
         """The terminator might have some additional newlines before it.
         There is at least one application that sends additional newlines
         before headers (the python setuptools package).
@@ -584,9 +590,7 @@ class MultiPartParser:
 
     def parse_parts(
         self, file: BinaryIO, boundary: bytes, content_length: int
-    ) -> Iterator[
-        Union[Tuple[str, Tuple[str, Union[str, FileStorage]]]]
-    ]:
+    ) -> Iterator[Union[Tuple[str, Tuple[str, Union[str, FileStorage]]]]]:
         """Generate ``('file', (name, val))`` and
         ``('form', (name, val))`` parts.
         """

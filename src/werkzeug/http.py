@@ -23,7 +23,6 @@ from ._internal import _to_str
 from werkzeug.types import BytesOrStr
 
 if TYPE_CHECKING:
-    from _pytest.capture import EncodedFile
     from io import BytesIO
     from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
     from .datastructures import (
@@ -994,7 +993,7 @@ def dump_age(age: Optional[Union[timedelta, int]] = None) -> Optional[str]:
 
 
 def is_resource_modified(
-    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     etag: Optional[str] = None,
     data: Optional[BytesOrStr] = None,
     last_modified: Optional[datetime] = None,
@@ -1125,9 +1124,7 @@ def is_hop_by_hop_header(header: str) -> bool:
 
 
 def parse_cookie(
-    header: Union[
-        Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool, Request]], str
-    ],
+    header: Union[Dict[str, Union[str, Tuple[int, int], BytesIO, bool, Request]], str],
     charset: str = "utf-8",
     errors: str = "replace",
     cls: Optional[Type[ImmutableMultiDict]] = None,

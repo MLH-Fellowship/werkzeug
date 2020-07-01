@@ -63,7 +63,6 @@ from typing import Union
 from ._internal import _get_environ
 
 if TYPE_CHECKING:
-    from _pytest.capture import EncodedFile
     from io import BytesIO
     from werkzeug.datastructures import WWWAuthenticate
     from werkzeug.wrappers.request import Request
@@ -149,11 +148,8 @@ class HTTPException(Exception):
         self,
         environ: Optional[
             Union[
-                Dict[
-                    str,
-                    Union[str, Tuple[int, int], BytesIO, EncodedFile, bool, Request],
-                ],
-                Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+                Dict[str, Union[str, Tuple[int, int], BytesIO, bool, Request],],
+                Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
             ]
         ] = None,
     ) -> str:
@@ -196,7 +192,7 @@ class HTTPException(Exception):
 
     def __call__(
         self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
         start_response: Callable,
     ) -> ClosingIterator:
         """Call the exception as WSGI application.

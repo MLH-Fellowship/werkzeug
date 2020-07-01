@@ -4,7 +4,21 @@ import re
 from functools import partial
 from functools import update_wrapper
 from itertools import chain
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, Iterable, IO, AnyStr, cast, Generator
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    Iterable,
+    IO,
+    AnyStr,
+    cast,
+    Generator,
+)
 
 from werkzeug.types import WSGIEnvironment, BytesOrStr
 
@@ -16,7 +30,6 @@ from .urls import uri_to_iri
 from .urls import url_join
 from .urls import url_parse
 from .urls import url_quote
-from _pytest.capture import EncodedFile
 from io import BufferedRandom, BufferedReader, BytesIO, FileIO, StringIO
 
 
@@ -247,7 +260,7 @@ def get_query_string(environ: Dict[str, Any]) -> str:
 
 
 def get_path_info(
-    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     charset: Optional[str] = "utf-8",
     errors: str = "replace",
 ) -> Union[str, bytes]:
@@ -266,7 +279,7 @@ def get_path_info(
 
 
 def get_script_name(
-    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     charset: Optional[str] = "utf-8",
     errors: str = "replace",
 ) -> Union[str, bytes]:
@@ -285,7 +298,7 @@ def get_script_name(
 
 
 def pop_path_info(
-    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     charset: str = "utf-8",
     errors: str = "replace",
 ) -> Optional[str]:
@@ -377,7 +390,7 @@ def peek_path_info(
 
 def extract_path_info(
     environ_or_baseurl: Union[
-        str, Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]]
+        str, Dict[str, Union[str, Tuple[int, int], BytesIO, bool]]
     ],
     path_or_url: str,
     charset: str = "utf-8",
@@ -523,7 +536,7 @@ class ClosingIterator:
 
 
 def wrap_file(
-    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+    environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
     file: Union[FileIO, BufferedReader],
     buffer_size: int = 8192,
 ) -> FileWrapper:
@@ -905,9 +918,7 @@ class LimitedStream(io.IOBase):
                   end with `EOF` (like `wsgi.input`)
     """
 
-    def __init__(
-        self, stream: Union[IO], limit: int
-    ) -> None:
+    def __init__(self, stream: Union[IO], limit: int) -> None:
         self._read = stream.read
         self._readline = stream.readline
         self._pos = 0

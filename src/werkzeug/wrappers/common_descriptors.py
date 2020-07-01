@@ -34,6 +34,7 @@ class CommonRequestDescriptorsMixin:
 
     .. versionadded:: 0.5
     """
+
     environ = WSGIEnvironment
 
     content_type = environ_property(
@@ -141,6 +142,7 @@ class CommonResponseDescriptorsMixin:
     mix this class in will automatically get descriptors for a couple of
     HTTP headers with automatic type conversion.
     """
+
     environ = WSGIEnvironment
     headers = Headers
 

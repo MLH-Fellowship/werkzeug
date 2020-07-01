@@ -151,7 +151,6 @@ from .wsgi import get_host
 
 if TYPE_CHECKING:
     from _ast import Call, FunctionDef
-    from _pytest.capture import EncodedFile
     from io import BytesIO
     from uuid import UUID
     from werkzeug.wrappers.response import Response
@@ -281,9 +280,7 @@ class RequestRedirect(HTTPException, RoutingException):
 
     def get_response(
         self,
-        environ: Optional[
-            Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]]
-        ] = None,
+        environ: Optional[Dict[str, Union[str, Tuple[int, int], BytesIO, bool]]] = None,
     ) -> Response:
         return redirect(self.new_url, self.code)
 

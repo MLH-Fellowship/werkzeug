@@ -33,8 +33,7 @@ from .utils import get_content_type
 from .wrappers import BaseRequest
 from .wsgi import ClosingIterator
 from .wsgi import get_current_url
-from _pytest.capture import EncodedFile
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union, IO
 from werkzeug.datastructures import CombinedMultiDict, FileMultiDict, Headers, MultiDict
 from werkzeug.debug import DebuggedApplication
 from werkzeug.middleware.http_proxy import ProxyMiddleware
@@ -336,7 +335,7 @@ class EnvironBuilder:
         input_stream: Optional[BytesIO] = None,
         content_type: Optional[str] = None,
         content_length: Optional[Union[str, int]] = None,
-        errors_stream: Optional[EncodedFile] = None,
+        errors_stream: Optional[IO] = None,
         multithread: bool = False,
         multiprocess: bool = False,
         run_once: bool = False,
@@ -347,7 +346,7 @@ class EnvironBuilder:
             Union[
                 Dict[str, int],
                 Dict[str, Tuple[int, int]],
-                Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+                Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
                 Dict[str, str],
             ]
         ] = None,

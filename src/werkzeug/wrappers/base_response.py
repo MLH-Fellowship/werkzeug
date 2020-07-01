@@ -13,7 +13,6 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
-from _pytest.capture import EncodedFile
 from werkzeug.types import T
 
 from .._internal import _to_bytes
@@ -255,10 +254,7 @@ class BaseResponse:
         cls: Type[T],
         response: Any,
         environ: Optional[
-            Union[
-                Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
-                Request,
-            ]
+            Union[Dict[str, Union[str, Tuple[int, int], BytesIO, bool]], Request,]
         ] = None,
     ) -> T:
         """Enforce that the WSGI response is a response object of the current
