@@ -11,7 +11,7 @@ from datetime import datetime
 from datetime import timedelta
 from itertools import chain
 from operator import methodcaller
-from typing import Any
+from typing import Any, AnyStr
 from typing import Callable
 from typing import Dict
 from typing import Iterator
@@ -72,7 +72,7 @@ _missing = _Missing()
 
 def _make_encode_wrapper(
     reference: Optional[Union[str, bytes]]
-) -> Callable[[str], Any]:
+) -> Callable[[str], Union[str, bytes]]:
     """Create a function that will be called with a string argument. If
     the reference is bytes, values will be encoded to bytes.
     """
@@ -82,9 +82,7 @@ def _make_encode_wrapper(
     return operator.methodcaller("encode", "latin1")
 
 
-def _check_str_tuple(
-    value: Union[Tuple[str, str], Tuple[str, str, str, str, str]]
-) -> None:
+def _check_str_tuple(value: Tuple[AnyStr, ...]) -> None:
     """Ensure tuple items are all strings or all bytes."""
     if not value:
         return

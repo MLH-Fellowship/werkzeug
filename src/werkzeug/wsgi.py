@@ -132,7 +132,9 @@ def host_is_trusted(hostname: str, trusted_list: List[str]) -> bool:
     return False
 
 
-def get_host(environ: WSGIEnvironment, trusted_hosts: Optional[List[str]] = None) -> str:
+def get_host(
+    environ: WSGIEnvironment, trusted_hosts: Optional[List[str]] = None
+) -> str:
     """Return the host for the given WSGI environment. This first checks
     the ``Host`` header. If it's not present, then ``SERVER_NAME`` and
     ``SERVER_PORT`` are used. The host will only contain the port if it
@@ -492,7 +494,9 @@ class ClosingIterator:
     """
 
     def __init__(
-        self, iterable: Iterable, callbacks: Optional[Union[Callable, List[Callable]]] = None
+        self,
+        iterable: Iterable,
+        callbacks: Optional[Union[Callable, List[Callable]]] = None,
     ) -> None:
         iterator = iter(iterable)
         self._next = partial(next, iterator)
@@ -613,10 +617,7 @@ class _RangeWrapper:
     """
 
     def __init__(
-        self,
-        iterable: Iterable,
-        start_byte: int = 0,
-        byte_range: Optional[int] = None,
+        self, iterable: Iterable, start_byte: int = 0, byte_range: Optional[int] = None,
     ) -> None:
         self.iterable = iter(iterable)
         self.byte_range = byte_range
