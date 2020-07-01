@@ -8,14 +8,19 @@ import sys
 import sysconfig
 import traceback
 from html import escape
+from io import StringIO
 from tokenize import TokenError
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import TextIO
+from typing import Tuple
+from typing import Union
 
 from .._internal import _to_str
 from ..filesystem import get_filesystem_encoding
 from ..utils import cached_property
 from .console import Console
-from io import StringIO
-from typing import Any, List, Optional, Tuple, Union, TextIO
 
 _coding_re = re.compile(br"coding[:=]\s*([-\w.]+)")
 _line_re = re.compile(br"^(.*?)$", re.MULTILINE)
@@ -347,7 +352,7 @@ class Group:
             tb = tb.tb_next
 
     def filter_hidden_frames(self) -> None:
-        new_frames = []
+        new_frames: List[Frame] = []
         hidden = False
 
         for frame in self.frames:
