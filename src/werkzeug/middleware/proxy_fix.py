@@ -26,6 +26,8 @@ from __future__ import annotations
 from werkzeug.http import parse_list_header
 from io import BytesIO
 from typing import Callable, Dict, Optional, Tuple, Union
+
+from werkzeug.types import WSGIEnvironment
 from werkzeug.wsgi import ClosingIterator
 
 
@@ -119,16 +121,13 @@ class ProxyFix:
         .. versionadded:: 0.15
         """
         if not (trusted and value):
-            return
+            return None
         values = parse_list_header(value)
         if len(values) >= trusted:
             return values[-trusted]
+        return None
 
-    def __call__(
-        self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
-        start_response: Callable,
-    ) -> ClosingIterator:
+    def __call__(self, environ: WSGIEnvironment, start_response: Callable,) -> Callable:
         """Modify the WSGI environ based on the various ``Forwarded``
         headers before calling the wrapped application. Store the
         original environ values in ``werkzeug.proxy_fix.orig_{key}``.
