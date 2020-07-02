@@ -10,7 +10,6 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from itertools import chain
-from operator import methodcaller
 from typing import Any
 from typing import AnyStr
 from typing import Callable
@@ -18,11 +17,10 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import TYPE_CHECKING
+from typing import Tuple
 from typing import Union
 from weakref import WeakKeyDictionary
-from werkzeug.types import BytesOrStr
 
 if TYPE_CHECKING:
     from werkzeug.wrappers.base_request import BaseRequest

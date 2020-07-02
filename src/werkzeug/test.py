@@ -4,14 +4,12 @@ import mimetypes
 import sys
 from collections import defaultdict
 from http.cookiejar import CookieJar
-from io import BufferedRandom
 from io import BytesIO
 from itertools import chain
 from random import random
 from tempfile import TemporaryFile
 from time import time
-from typing import Any
-from typing import AnyStr
+from typing import Any, Mapping
 from typing import Callable
 from typing import Dict
 from typing import Hashable
@@ -23,19 +21,14 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 from urllib.request import Request as _UrllibRequest
-from werkzeug.datastructures import CombinedMultiDict
-from werkzeug.datastructures import FileMultiDict
-from werkzeug.datastructures import Headers
-from werkzeug.datastructures import MultiDict
+
 from werkzeug.debug import DebuggedApplication
 from werkzeug.middleware.http_proxy import ProxyMiddleware
 from werkzeug.types import WSGIEnvironment
-from werkzeug.wrappers.base_request import BaseRequest
 from werkzeug.wrappers.base_response import BaseResponse
 from werkzeug.wrappers.request import PlainRequest
 from werkzeug.wrappers.request import Request
 from werkzeug.wrappers.response import Response
-from werkzeug.wsgi import ClosingIterator
 
 from ._internal import _get_environ
 from ._internal import _make_encode_wrapper
@@ -63,12 +56,12 @@ from .wsgi import get_current_url
 
 
 def stream_encode_multipart(
-    values: Union[MultiDict, CombinedMultiDict],
+    values: Mapping,
     use_tempfile: bool = True,
     threshold: int = 1024 * 500,
-    boundary: Optional[Any] = None,
+    boundary: Optional[str] = None,
     charset: str = "utf-8",
-) -> Union[Tuple[BufferedRandom, int, str], Tuple[BytesIO, int, str]]:
+) -> Tuple[IO, int, str]:
     """Encode a dict of values (either strings or file descriptors or
     :class:`FileStorage` objects.) into a multipart encoded string stored
     in a file descriptor.
@@ -105,7 +98,7 @@ def stream_encode_multipart(
         values = MultiDict(values)
 
     for key, values in values.lists():  # type: ignore
-        for value in values:  # type: ignore
+        for value in values:
             write(f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"')
             reader = getattr(value, "read", None)
             if reader is not None:
