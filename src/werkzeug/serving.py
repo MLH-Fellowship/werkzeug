@@ -92,7 +92,7 @@ class DechunkedInput(io.RawIOBase):
             raise OSError("Negative chunk length not allowed")
         return _len
 
-    def readinto(self, buf):
+    def readinto(self, buf) -> int:
         read = 0
         while not self._done and read < len(buf):
             if self._len == 0:
