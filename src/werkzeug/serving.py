@@ -409,7 +409,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 BaseRequestHandler = WSGIRequestHandler
 
 
-def generate_adhoc_ssl_pair(cn: None = None) -> Tuple[_Certificate, _RSAPrivateKey]:
+def generate_adhoc_ssl_pair(cn: Optional[str] = None) -> Tuple[_Certificate, _RSAPrivateKey]:
     try:
         from cryptography import x509
         from cryptography.x509.oid import NameOID
@@ -424,7 +424,7 @@ def generate_adhoc_ssl_pair(cn: None = None) -> Tuple[_Certificate, _RSAPrivateK
 
     # pretty damn sure that this is not actually accepted by anyone
     if cn is None:
-        cn = "*"  # type: ignore
+        cn = "*"
 
     subject = x509.Name(
         [
