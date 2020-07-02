@@ -20,14 +20,13 @@ from typing import Iterator
 from typing import List
 from typing import Mapping
 from typing import Optional
-from typing import TextIO
 from typing import Tuple
 from typing import Type
+from typing import TYPE_CHECKING
 from typing import Union
 from urllib.request import Request as _UrllibRequest
 from werkzeug.debug import DebuggedApplication
 from werkzeug.middleware.http_proxy import ProxyMiddleware
-from werkzeug.types import AnyHeaders
 from werkzeug.types import WSGIEnvironment
 from werkzeug.wrappers.base_response import BaseResponse
 from werkzeug.wrappers.request import PlainRequest
@@ -38,6 +37,7 @@ from ._internal import _get_environ
 from ._internal import _make_encode_wrapper
 from ._internal import _to_bytes
 from ._internal import _wsgi_encoding_dance
+from .datastructures import AnyHeaders
 from .datastructures import CallbackDict
 from .datastructures import CombinedMultiDict
 from .datastructures import EnvironHeaders

@@ -24,6 +24,7 @@ from typing import Optional
 from typing import Set
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 from werkzeug.types import T
 from werkzeug.types import UnicodeEncodable
@@ -1372,6 +1373,9 @@ class Headers:
 
     def __repr__(self):
         return f"{type(self).__name__}({list(self)!r})"
+
+
+AnyHeaders = TypeVar("AnyHeaders", List[Tuple[str, str]], Headers)
 
 
 class ImmutableHeadersMixin:

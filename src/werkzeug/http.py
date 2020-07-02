@@ -13,7 +13,6 @@ from time import time
 from typing import TYPE_CHECKING
 from urllib.parse import unquote_to_bytes as _unquote
 from urllib.request import parse_http_list as _parse_list_header
-from werkzeug.types import AnyHeaders
 from werkzeug.types import BytesOrStr
 from werkzeug.types import T
 
@@ -35,7 +34,6 @@ if TYPE_CHECKING:
         ContentSecurityPolicy,
         ETags,
         HeaderSet,
-        Headers,
         IfRange,
         ImmutableMultiDict,
         LanguageAccept,
@@ -43,10 +41,10 @@ if TYPE_CHECKING:
         MultiDict,
         Range,
         RequestCacheControl,
-        ResponseCacheControl,
         WWWAuthenticate,
     )
     from .wrappers.request import Request
+    from .datastructures import AnyHeaders
 
 _cookie_charset = "latin1"
 _basic_auth_charset = "utf-8"
