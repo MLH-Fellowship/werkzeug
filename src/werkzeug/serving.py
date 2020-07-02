@@ -24,7 +24,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import Tuple, List, Any, Optional
+from typing import Tuple, List, Any, Optional, Union, Callable
 
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
@@ -548,7 +548,7 @@ def is_ssl_error(error=None):
     return isinstance(error, ssl.SSLError)
 
 
-def select_address_family(host, port):
+def select_address_family(host: str, port: Union[str, int]):
     """Return ``AF_INET4``, ``AF_INET6``, or ``AF_UNIX`` depending on
     the host and port."""
     if host.startswith("unix://"):
@@ -576,18 +576,18 @@ class BaseWSGIServer(HTTPServer):
 
     """Simple single-threaded, single-process WSGI server."""
 
-    multithread = False
-    multiprocess = False
-    request_queue_size = LISTEN_QUEUE
+    multithread: bool = False
+    multiprocess: bool = False
+    request_queue_size: int = LISTEN_QUEUE
 
     def __init__(
         self,
-        host,
-        port,
-        app,
-        handler=None,
+        host: str,
+        port: Union[str, int],
+        app: Optional[Callable],
+        handler: Optional[Callable] = None,
         passthrough_errors=False,
-        ssl_context=None,
+        ssl_context: Union[str, Tuple[Any, ...], ssl.SSLContext] = None,
         fd=None,
     ):
         if handler is None:
@@ -624,7 +624,7 @@ class BaseWSGIServer(HTTPServer):
             if ssl_context == "adhoc":
                 ssl_context = generate_adhoc_ssl_context()
 
-            self.socket = ssl_context.wrap_socket(self.socket, server_side=True)
+            self.socket = ssl_context.wrap_socket(self.socket, server_side=True)  # type: ignore
             self.ssl_context = ssl_context
         else:
             self.ssl_context = None
@@ -641,13 +641,13 @@ class BaseWSGIServer(HTTPServer):
         finally:
             self.server_close()
 
-    def handle_error(self, request, client_address):
+    def handle_error(self, request, client_address) -> None:
         if self.passthrough_errors:
             raise
 
         return HTTPServer.handle_error(self, request, client_address)
 
-    def get_request(self):
+    def get_request(self) -> Tuple[ssl.SSLSocket, Any]:  # type: ignore
         con, info = self.socket.accept()
         return con, info
 
