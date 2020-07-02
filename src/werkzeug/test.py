@@ -10,6 +10,8 @@ from tempfile import TemporaryFile
 from time import time
 from urllib.request import Request as _UrllibRequest
 
+from werkzeug.types import WSGIEnvironment
+
 from ._internal import _get_environ
 from ._internal import _make_encode_wrapper
 from ._internal import _to_bytes
@@ -33,7 +35,20 @@ from .utils import get_content_type
 from .wrappers import BaseRequest
 from .wsgi import ClosingIterator
 from .wsgi import get_current_url
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union, IO
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    IO,
+    Hashable,
+    AnyStr,
+)
 from werkzeug.datastructures import CombinedMultiDict, FileMultiDict, Headers, MultiDict
 from werkzeug.debug import DebuggedApplication
 from werkzeug.middleware.http_proxy import ProxyMiddleware
@@ -48,7 +63,7 @@ def stream_encode_multipart(
     values: Union[MultiDict, CombinedMultiDict],
     use_tempfile: bool = True,
     threshold: int = 1024 * 500,
-    boundary: None = None,
+    boundary: Optional[Any] = None,
     charset: str = "utf-8",
 ) -> Union[Tuple[BufferedRandom, int, str], Tuple[BytesIO, int, str]]:
     """Encode a dict of values (either strings or file descriptors or
@@ -78,7 +93,7 @@ def stream_encode_multipart(
                 _closure[1] = total_length + length
 
     else:
-        write_binary = _closure[0].write
+        write_binary = _closure[0].write  # type: ignore
 
     def write(string):
         write_binary(string.encode(charset))
@@ -86,8 +101,8 @@ def stream_encode_multipart(
     if not isinstance(values, MultiDict):
         values = MultiDict(values)
 
-    for key, values in values.lists():
-        for value in values:
+    for key, values in values.lists():  # type: ignore
+        for value in values:  # type: ignore
             write(f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"')
             reader = getattr(value, "read", None)
             if reader is not None:
@@ -119,9 +134,9 @@ def stream_encode_multipart(
             write("\r\n")
     write(f"--{boundary}--\r\n")
 
-    length = int(_closure[0].tell())
-    _closure[0].seek(0)
-    return _closure[0], length, boundary
+    length = int(_closure[0].tell())  # type: ignore
+    _closure[0].seek(0)  # type: ignore
+    return _closure[0], length, boundary  # type: ignore
 
 
 def encode_multipart(values, boundary=None, charset="utf-8"):
@@ -189,27 +204,17 @@ class _TestCookieJar(CookieJar):
             environ.pop("HTTP_COOKIE", None)
 
     def extract_wsgi(
-        self, environ: Dict[str, Any], headers: Union[List[Tuple[str, str]], Headers]
+        self, environ: WSGIEnvironment, headers: Union[List[Tuple[str, str]], Headers]
     ) -> None:
         """Extract the server's set-cookie headers as cookies into the
         cookie jar.
         """
         self.extract_cookies(
-            _TestCookieResponse(headers), _UrllibRequest(get_current_url(environ))
+            _TestCookieResponse(headers), _UrllibRequest(get_current_url(environ))  # type: ignore
         )
 
 
-def _iter_data(
-    data: Any,
-) -> Iterator[
-    Union[
-        Tuple[str, str],
-        Tuple[str, Tuple[BytesIO, str]],
-        Tuple[str, Tuple[BytesIO]],
-        Tuple[str, BytesIO],
-        Tuple[str, int],
-    ]
-]:
+def _iter_data(data: Any,) -> Iterator[Tuple[Hashable, Any]]:
     """Iterates over a `dict` or :class:`MultiDict` yielding all keys and
     values.
     This is used to iterate over the data passed to the
@@ -328,7 +333,7 @@ class EnvironBuilder:
 
     def __init__(
         self,
-        path: Union[str, bytes] = "/",
+        path: str = "/",
         base_url: Optional[str] = None,
         query_string: Optional[Union[str, Dict[str, str]]] = None,
         method: str = "GET",
@@ -426,9 +431,7 @@ class EnvironBuilder:
 
     @classmethod
     def from_environ(
-        cls,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
-        **kwargs,
+        cls, environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]], **kwargs,
     ) -> EnvironBuilder:
         """Turn an environ dict back into a builder. Any extra kwargs
         override the args extracted from the environ.
@@ -439,7 +442,7 @@ class EnvironBuilder:
         out = {
             "path": environ["PATH_INFO"],
             "base_url": cls._make_base_url(
-                environ["wsgi.url_scheme"], headers.pop("Host"), environ["SCRIPT_NAME"]
+                environ["wsgi.url_scheme"], headers.pop("Host"), environ["SCRIPT_NAME"]  # type: ignore
             ),
             "query_string": environ["QUERY_STRING"],
             "method": environ["REQUEST_METHOD"],
@@ -453,10 +456,10 @@ class EnvironBuilder:
             "headers": headers,
         }
         out.update(kwargs)
-        return cls(**out)
+        return cls(**out)  # type: ignore
 
     def _add_file_from_data(
-        self, key: str, value: Union[BytesIO, Tuple[BytesIO], Tuple[BytesIO, str]]
+        self, key: Hashable, value: Union[BytesIO, Tuple[BytesIO], Tuple[BytesIO, str]]
     ) -> None:
         """Called in the EnvironBuilder to add files from the data dict."""
         if isinstance(value, tuple):
@@ -715,10 +718,10 @@ class EnvironBuilder:
             )
             content_type = f'{mimetype}; boundary="{boundary}"'
         elif mimetype == "application/x-www-form-urlencoded":
-            values = url_encode(self.form, charset=self.charset)
-            values = values.encode("ascii")
+            values = url_encode(self.form, charset=self.charset)  # type: ignore
+            values = values.encode("ascii")  # type: ignore
             content_length = len(values)
-            input_stream = BytesIO(values)
+            input_stream = BytesIO(values)  # type: ignore
         else:
             input_stream = BytesIO()
 
@@ -745,13 +748,13 @@ class EnvironBuilder:
                 "SERVER_PORT": str(self.server_port),
                 "HTTP_HOST": self.host,
                 "SERVER_PROTOCOL": self.server_protocol,
-                "wsgi.version": self.wsgi_version,
+                "wsgi.version": self.wsgi_version,  # type: ignore
                 "wsgi.url_scheme": self.url_scheme,
                 "wsgi.input": input_stream,
-                "wsgi.errors": self.errors_stream,
-                "wsgi.multithread": self.multithread,
-                "wsgi.multiprocess": self.multiprocess,
-                "wsgi.run_once": self.run_once,
+                "wsgi.errors": self.errors_stream,  # type: ignore
+                "wsgi.multithread": self.multithread,  # type: ignore
+                "wsgi.multiprocess": self.multiprocess,  # type: ignore
+                "wsgi.run_once": self.run_once,  # type: ignore
             }
         )
 
@@ -770,11 +773,11 @@ class EnvironBuilder:
         for key, value in headers.to_wsgi_list():
             combined_headers[f"HTTP_{key.upper().replace('-', '_')}"].append(value)
 
-        for key, values in combined_headers.items():
+        for key, values in combined_headers.items():  # type: ignore
             result[key] = ", ".join(values)
 
         if self.environ_overrides:
-            result.update(self.environ_overrides)
+            result.update(self.environ_overrides)  # type: ignore
 
         return result
 
@@ -787,7 +790,7 @@ class EnvironBuilder:
         :param cls: The request wrapper to use.
         """
         if cls is None:
-            cls = self.request_class
+            cls = self.request_class  # type: ignore
         return cls(self.get_environ())
 
 
@@ -888,7 +891,7 @@ class Client:
 
     def run_wsgi_app(
         self,
-        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
+        environ: Dict[str, Union[str, Tuple[int, int], BytesIO, bool]],
         buffered: bool = False,
     ) -> Union[Tuple[ClosingIterator, str, Headers], Tuple[chain, str, Headers]]:
         """Runs the wrapped WSGI app with the given environment."""
@@ -897,7 +900,7 @@ class Client:
         rv = run_wsgi_app(self.application, environ, buffered=buffered)
         if self.cookie_jar is not None:
             self.cookie_jar.extract_wsgi(environ, rv[2])
-        return rv
+        return rv  # type: ignore
 
     def resolve_redirect(self, response, new_location, environ, buffered=False):
         """Perform a new request to the location given by the redirect
@@ -962,17 +965,7 @@ class Client:
         finally:
             self.response_wrapper = old_response_wrapper
 
-    def open(
-        self, *args, **kwargs
-    ) -> Union[
-        Tuple[ClosingIterator, str, Headers],
-        BaseResponse,
-        Response,
-        Tuple[
-            Dict[str, Union[str, Tuple[int, int], BytesIO, EncodedFile, bool]],
-            Tuple[ClosingIterator, str, Headers],
-        ],
-    ]:
+    def open(self, *args, **kwargs) -> Any:
         """Takes the same arguments as the :class:`EnvironBuilder` class with
         some additions:  You can provide a :class:`EnvironBuilder` or a WSGI
         environment as only argument instead of the :class:`EnvironBuilder`
@@ -1041,7 +1034,7 @@ class Client:
             )
 
         if self.response_wrapper is not None:
-            response = self.response_wrapper(*response)
+            response = self.response_wrapper(*response)  # type: ignore
         if as_tuple:
             return environ, response
         return response
@@ -1115,13 +1108,9 @@ def create_environ(*args, **kwargs):
 
 
 def run_wsgi_app(
-    app: Any, environ: Any, buffered: bool = False
+    app: Any, environ: WSGIEnvironment, buffered: bool = False
 ) -> Union[
-    Tuple[ClosingIterator, str, Headers],
-    Tuple[List[str], str, Headers],
-    Tuple[chain, str, Headers],
-    Tuple[List[Any], str, Headers],
-    Tuple[List[bytes], str, Headers],
+    Tuple[Iterator[Any], str, Headers],
 ]:
     """Return a tuple in the form (app_iter, status, headers) of the
     application output.  This works best if you pass it an application that
@@ -1140,8 +1129,8 @@ def run_wsgi_app(
     :return: tuple in the form ``(app_iter, status, headers)``
     """
     environ = _get_environ(environ)
-    response = []
-    buffer = []
+    response: List[Any] = []
+    buffer: List[Any] = []
 
     def start_response(status, headers, exc_info=None):
         if exc_info:
@@ -1160,7 +1149,7 @@ def run_wsgi_app(
     # application iterator into a regular list
     if buffered:
         try:
-            app_iter = list(app_iter)
+            app_iter = list(app_iter)  # type: ignore
         finally:
             if close_func is not None:
                 close_func()

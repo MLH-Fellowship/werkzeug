@@ -22,9 +22,9 @@ from ..wrappers.base_response import _clean_accept_ranges
 from ..wsgi import _RangeWrapper
 from io import BytesIO
 from typing import Dict, Optional, Tuple, Union, TYPE_CHECKING, Any
+from werkzeug.datastructures import ResponseCacheControl
 
 if TYPE_CHECKING:
-    from werkzeug.datastructures import ResponseCacheControl
     from werkzeug.wrappers.response import Response
 
 
