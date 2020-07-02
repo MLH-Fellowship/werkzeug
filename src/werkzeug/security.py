@@ -6,7 +6,7 @@ import posixpath
 from hmac import HMAC
 from random import SystemRandom
 from struct import Struct
-from typing import Optional, AnyStr
+from typing import Optional, AnyStr, Union, Callable
 from typing import Tuple
 
 from ._internal import _to_bytes
@@ -153,7 +153,11 @@ def _hash_internal(method: str, salt: str, password: str) -> Tuple[str, str]:
     return rv, actual_method
 
 
-def _create_mac(key: bytes, msg: bytes, method: str) -> HMAC:
+def _create_mac(
+    key: Union[bytes, bytearray],
+    msg: Union[bytes, bytearray],
+    method: Union[Callable, str],
+) -> HMAC:
     if callable(method):
         return hmac.HMAC(key, msg, method)  # type: ignore
 
