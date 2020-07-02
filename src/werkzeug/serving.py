@@ -492,7 +492,7 @@ def make_ssl_devcert(
     return cert_file, pkey_file
 
 
-def generate_adhoc_ssl_context():
+def generate_adhoc_ssl_context() -> ssl.SSLContext:
     """Generates an adhoc SSL context for the development server."""
     import tempfile
     import atexit
@@ -522,7 +522,7 @@ def generate_adhoc_ssl_context():
     return ctx
 
 
-def load_ssl_context(cert_file, pkey_file=None, protocol=None):
+def load_ssl_context(cert_file, pkey_file=None, protocol=None) -> ssl.SSLContext:
     """Loads SSL context from cert/private key files and optional protocol.
     Many parameters are directly taken from the API of
     :py:class:`ssl.SSLContext`.
