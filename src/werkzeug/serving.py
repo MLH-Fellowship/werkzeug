@@ -24,7 +24,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import Tuple, List, Any, Optional, Union, Callable
+from typing import Tuple, List, Any, Optional, Union, Callable, Type
 
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
@@ -664,7 +664,7 @@ class ForkingWSGIServer(ForkingMixIn, BaseWSGIServer):
 
     """A WSGI server that does forking."""
 
-    multiprocess = True
+    multiprocess: bool = True
 
     def __init__(
         self,
@@ -695,7 +695,7 @@ def make_server(
     passthrough_errors=False,
     ssl_context=None,
     fd=None,
-):
+) -> BaseWSGIServer:
     """Create a new server instance that is either threaded, or forks
     or just processes one request after another.
     """
