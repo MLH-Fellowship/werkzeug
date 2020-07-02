@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import codecs
 import re
 from functools import update_wrapper
@@ -6,6 +7,20 @@ from io import BytesIO
 from itertools import chain
 from itertools import repeat
 from itertools import tee
+from typing import Any
+from typing import AnyStr
+from typing import BinaryIO
+from typing import Callable
+from typing import Dict
+from typing import IO
+from typing import Iterable
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import TYPE_CHECKING
+from typing import Union
 
 from . import exceptions
 from ._internal import _to_str
@@ -17,22 +32,6 @@ from .urls import url_decode_stream
 from .wsgi import get_content_length
 from .wsgi import get_input_stream
 from .wsgi import make_line_iter
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-    TYPE_CHECKING,
-    BinaryIO,
-    IO,
-    AnyStr,
-    Iterable,
-)
 
 if TYPE_CHECKING:
     from werkzeug.datastructures import (

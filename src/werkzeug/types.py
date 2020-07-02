@@ -2,7 +2,10 @@
 Custom types which Werkzeug uses. These provide for better editor tooling and streamline internal
 development.
 """
-from typing import Union, TypeVar, Dict, Any
+from typing import Any
+from typing import Dict
+from typing import TypeVar
+from typing import Union
 
 BytesOrStr = Union[bytes, str]
 # A value which can be encoded using Unicode.

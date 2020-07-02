@@ -23,10 +23,13 @@ setting each header so the middleware knows what to trust.
 """
 from __future__ import annotations
 
-from werkzeug.http import parse_list_header
 from io import BytesIO
-from typing import Callable, Dict, Optional, Tuple, Union
-
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+from typing import Union
+from werkzeug.http import parse_list_header
 from werkzeug.types import WSGIEnvironment
 from werkzeug.wsgi import ClosingIterator
 

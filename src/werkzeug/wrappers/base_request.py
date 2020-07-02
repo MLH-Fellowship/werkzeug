@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from functools import update_wrapper
 from io import BytesIO
-
+from typing import Any
+from typing import BinaryIO
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import TYPE_CHECKING
+from typing import Union
 from werkzeug.types import WSGIEnvironment
 
 from .._internal import _to_str
@@ -25,7 +31,6 @@ from ..wsgi import get_content_length
 from ..wsgi import get_current_url
 from ..wsgi import get_host
 from ..wsgi import get_input_stream
-from typing import Any, Callable, Dict, Optional, Union, TYPE_CHECKING, BinaryIO
 
 if TYPE_CHECKING:
     from tempfile import SpooledTemporaryFile

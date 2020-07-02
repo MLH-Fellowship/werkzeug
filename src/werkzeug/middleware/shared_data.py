@@ -18,6 +18,13 @@ from datetime import datetime
 from io import BytesIO
 from time import mktime
 from time import time
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
+from werkzeug.wsgi import FileWrapper
 from zlib import adler32
 
 from ..filesystem import get_filesystem_encoding
@@ -27,8 +34,6 @@ from ..security import safe_join
 from ..utils import get_content_type
 from ..wsgi import get_path_info
 from ..wsgi import wrap_file
-from typing import Callable, Dict, List, Optional, Tuple, Union
-from werkzeug.wsgi import FileWrapper
 
 
 class SharedDataMiddleware:

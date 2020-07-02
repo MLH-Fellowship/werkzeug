@@ -4,35 +4,35 @@ Contains implementations of functions from :mod:`urllib.parse` that
 handle bytes and strings.
 """
 from __future__ import annotations
+
 import codecs
 import os
 import re
 import warnings
 from collections import namedtuple
-from typing import (
-    Any,
-    Callable,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-    Dict,
-    AnyStr,
-    IO,
-    BinaryIO,
-)
+from io import BytesIO
+from io import StringIO
+from typing import Any
+from typing import AnyStr
+from typing import BinaryIO
+from typing import Callable
+from typing import Dict
 from typing import FrozenSet
-
-from werkzeug.types import BytesOrStr, T
+from typing import IO
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
+from werkzeug.types import BytesOrStr
+from werkzeug.types import T
 
 from ._internal import _check_str_tuple
 from ._internal import _decode_idna
 from ._internal import _encode_idna
 from ._internal import _make_encode_wrapper
 from ._internal import _to_str
-from io import BytesIO, StringIO
 
 # A regular expression for what a valid schema looks like
 _scheme_re = re.compile(r"^[a-zA-Z0-9+-.]+$")

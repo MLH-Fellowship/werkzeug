@@ -14,14 +14,21 @@ common HTTP errors such as non-empty responses for 304 status codes.
 """
 from __future__ import annotations
 
+from io import BytesIO
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import IO
+from typing import List
+from typing import Set
+from typing import Tuple
+from typing import Union
 from urllib.parse import urlparse
 from warnings import warn
 
 from ..datastructures import Headers
 from ..http import is_entity_header
 from ..wsgi import FileWrapper
-from io import BytesIO
-from typing import Any, Callable, Dict, List, Tuple, Union, IO, Set
 
 
 class WSGIWarning(Warning):

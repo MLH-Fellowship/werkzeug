@@ -1,26 +1,30 @@
 from __future__ import annotations
+
 import io
 import re
 from functools import partial
 from functools import update_wrapper
+from io import BufferedRandom
+from io import BufferedReader
+from io import BytesIO
+from io import FileIO
+from io import StringIO
 from itertools import chain
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Union,
-    Iterable,
-    IO,
-    AnyStr,
-    cast,
-    Generator,
-)
-
-from werkzeug.types import WSGIEnvironment, BytesOrStr
+from typing import Any
+from typing import AnyStr
+from typing import Callable
+from typing import cast
+from typing import Dict
+from typing import Generator
+from typing import IO
+from typing import Iterable
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
+from werkzeug.types import BytesOrStr
+from werkzeug.types import WSGIEnvironment
 
 from ._internal import _encode_idna
 from ._internal import _make_encode_wrapper
@@ -30,7 +34,6 @@ from .urls import uri_to_iri
 from .urls import url_join
 from .urls import url_parse
 from .urls import url_quote
-from io import BufferedRandom, BufferedReader, BytesIO, FileIO, StringIO
 
 
 def responder(f: Callable) -> Callable:

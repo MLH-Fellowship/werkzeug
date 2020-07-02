@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+from io import BytesIO
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
+from werkzeug.datastructures import ResponseCacheControl
 from werkzeug.types import WSGIEnvironment
 
 from .._internal import _get_environ
@@ -20,9 +28,6 @@ from ..utils import cached_property
 from ..utils import header_property
 from ..wrappers.base_response import _clean_accept_ranges
 from ..wsgi import _RangeWrapper
-from io import BytesIO
-from typing import Dict, Optional, Tuple, Union, TYPE_CHECKING, Any
-from werkzeug.datastructures import ResponseCacheControl
 
 if TYPE_CHECKING:
     from werkzeug.wrappers.response import Response

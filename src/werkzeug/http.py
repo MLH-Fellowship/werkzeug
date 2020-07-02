@@ -14,13 +14,14 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from urllib.parse import unquote_to_bytes as _unquote
 from urllib.request import parse_http_list as _parse_list_header
+from werkzeug.types import BytesOrStr
+from werkzeug.types import T
 
 from ._internal import _cookie_parse_impl
 from ._internal import _cookie_quote
 from ._internal import _make_cookie_domain
 from ._internal import _to_bytes
 from ._internal import _to_str
-from werkzeug.types import BytesOrStr, T
 
 if TYPE_CHECKING:
     from io import BytesIO

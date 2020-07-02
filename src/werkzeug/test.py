@@ -1,16 +1,41 @@
 from __future__ import annotations
+
 import mimetypes
 import sys
 from collections import defaultdict
 from http.cookiejar import CookieJar
-from io import BufferedRandom, BytesIO
+from io import BufferedRandom
+from io import BytesIO
 from itertools import chain
 from random import random
 from tempfile import TemporaryFile
 from time import time
+from typing import Any
+from typing import AnyStr
+from typing import Callable
+from typing import Dict
+from typing import Hashable
+from typing import IO
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
 from urllib.request import Request as _UrllibRequest
-
+from werkzeug.datastructures import CombinedMultiDict
+from werkzeug.datastructures import FileMultiDict
+from werkzeug.datastructures import Headers
+from werkzeug.datastructures import MultiDict
+from werkzeug.debug import DebuggedApplication
+from werkzeug.middleware.http_proxy import ProxyMiddleware
 from werkzeug.types import WSGIEnvironment
+from werkzeug.wrappers.base_request import BaseRequest
+from werkzeug.wrappers.base_response import BaseResponse
+from werkzeug.wrappers.request import PlainRequest
+from werkzeug.wrappers.request import Request
+from werkzeug.wrappers.response import Response
+from werkzeug.wsgi import ClosingIterator
 
 from ._internal import _get_environ
 from ._internal import _make_encode_wrapper
@@ -35,28 +60,6 @@ from .utils import get_content_type
 from .wrappers import BaseRequest
 from .wsgi import ClosingIterator
 from .wsgi import get_current_url
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-    IO,
-    Hashable,
-    AnyStr,
-)
-from werkzeug.datastructures import CombinedMultiDict, FileMultiDict, Headers, MultiDict
-from werkzeug.debug import DebuggedApplication
-from werkzeug.middleware.http_proxy import ProxyMiddleware
-from werkzeug.wrappers.base_request import BaseRequest
-from werkzeug.wrappers.base_response import BaseResponse
-from werkzeug.wrappers.request import PlainRequest, Request
-from werkzeug.wrappers.response import Response
-from werkzeug.wsgi import ClosingIterator
 
 
 def stream_encode_multipart(

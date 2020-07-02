@@ -1,9 +1,18 @@
 from __future__ import annotations
+
 import copy
-from functools import partial, update_wrapper
+from functools import partial
+from functools import update_wrapper
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 from .wsgi import ClosingIterator
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from werkzeug.debug.console import HTMLStringO, _InteractiveConsole

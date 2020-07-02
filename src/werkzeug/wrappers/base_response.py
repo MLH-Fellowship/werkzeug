@@ -3,16 +3,17 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from itertools import chain
-from typing import Any, Type, Iterable
+from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Iterable
 from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Type
 from typing import TYPE_CHECKING
 from typing import Union
-
 from werkzeug.types import T
 
 from .._internal import _to_bytes

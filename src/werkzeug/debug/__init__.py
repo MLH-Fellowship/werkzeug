@@ -10,9 +10,17 @@ import re
 import sys
 import time
 import uuid
+from io import BytesIO
 from itertools import chain
 from os.path import basename
 from os.path import join
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Hashable
+from typing import Iterator
+from typing import Tuple
+from typing import Union
 
 from .._internal import _log
 from ..http import parse_cookie
@@ -22,8 +30,6 @@ from ..wrappers import BaseResponse as Response
 from .console import Console
 from .tbtools import get_current_traceback
 from .tbtools import render_console_html
-from io import BytesIO
-from typing import Any, Callable, Dict, Iterator, Tuple, Union, Hashable
 
 # A week
 PIN_TIME = 60 * 60 * 24 * 7

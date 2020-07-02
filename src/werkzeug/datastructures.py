@@ -25,8 +25,8 @@ from typing import Set
 from typing import Tuple
 from typing import Type
 from typing import Union
-
-from werkzeug.types import UnicodeEncodable, T
+from werkzeug.types import T
+from werkzeug.types import UnicodeEncodable
 
 from . import exceptions
 from ._internal import _make_encode_wrapper

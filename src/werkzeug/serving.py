@@ -12,6 +12,7 @@ It provides features like interactive debugging and code reloading. Use
     from werkzeug import run_simple
 """
 from __future__ import annotations
+
 import io
 import os
 import platform
@@ -23,6 +24,12 @@ from datetime import datetime as dt
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
+from typing import Callable
+from typing import Optional
+from typing import Tuple
+
+from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
+from cryptography.hazmat.backends.openssl.x509 import _Certificate
 
 from ._internal import _log
 from ._internal import _wsgi_encoding_dance
@@ -30,9 +37,6 @@ from .exceptions import InternalServerError
 from .urls import uri_to_iri
 from .urls import url_parse
 from .urls import url_unquote
-from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
-from cryptography.hazmat.backends.openssl.x509 import _Certificate
-from typing import Callable, Optional, Tuple
 
 try:
     import ssl

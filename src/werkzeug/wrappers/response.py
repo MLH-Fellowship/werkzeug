@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from typing import List
+from typing import Union
+
 from ..utils import cached_property
 from .auth import WWWAuthenticateMixin
 from .base_response import BaseResponse
 from .common_descriptors import CommonResponseDescriptorsMixin
 from .cors import CORSResponseMixin
 from .etag import ETagResponseMixin
-from typing import List, Union
 
 
 class ResponseStream:

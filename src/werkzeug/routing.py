@@ -116,21 +116,18 @@ import warnings
 from pprint import pformat
 from string import Template
 from threading import Lock
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Union,
-    TYPE_CHECKING,
-    Hashable,
-    Pattern,
-)
-
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Hashable
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Pattern
+from typing import Set
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 from werkzeug.types import WSGIEnvironment
 
 from ._internal import _encode_idna
