@@ -6,9 +6,8 @@ import posixpath
 from hmac import HMAC
 from random import SystemRandom
 from struct import Struct
-from typing import Optional
+from typing import Optional, AnyStr
 from typing import Tuple
-from typing import Union
 
 from ._internal import _to_bytes
 
@@ -24,7 +23,7 @@ _os_alt_seps = list(
 
 
 def pbkdf2_hex(
-    data: Union[str, bytes],
+    data: AnyStr,
     salt: str,
     iterations: int = DEFAULT_PBKDF2_ITERATIONS,
     keylen: Optional[int] = None,
@@ -48,7 +47,7 @@ def pbkdf2_hex(
 
 
 def pbkdf2_bin(
-    data: Union[str, bytes],
+    data: AnyStr,
     salt: str,
     iterations: int = DEFAULT_PBKDF2_ITERATIONS,
     keylen: Optional[int] = None,
