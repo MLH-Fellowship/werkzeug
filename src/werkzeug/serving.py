@@ -629,10 +629,10 @@ class BaseWSGIServer(HTTPServer):
         else:
             self.ssl_context = None
 
-    def log(self, type, message, *args):
+    def log(self, type, message, *args) -> None:
         _log(type, message, *args)
 
-    def serve_forever(self):
+    def serve_forever(self) -> None:  # type: ignore
         self.shutdown_signal = False
         try:
             HTTPServer.serve_forever(self)
@@ -656,8 +656,8 @@ class ThreadedWSGIServer(socketserver.ThreadingMixIn, BaseWSGIServer):
 
     """A WSGI server that does threading."""
 
-    multithread = True
-    daemon_threads = True
+    multithread: bool = True
+    daemon_threads: bool = True
 
 
 class ForkingWSGIServer(ForkingMixIn, BaseWSGIServer):
