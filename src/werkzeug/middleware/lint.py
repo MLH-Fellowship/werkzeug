@@ -21,7 +21,7 @@ from ..datastructures import Headers
 from ..http import is_entity_header
 from ..wsgi import FileWrapper
 from io import BytesIO
-from typing import Any, Callable, Dict, List, Tuple, Union, IO
+from typing import Any, Callable, Dict, List, Tuple, Union, IO, Set
 
 
 class WSGIWarning(Warning):
@@ -124,7 +124,7 @@ class GuardedIterator:
     def __init__(
         self,
         iterator: List[str],
-        headers_set: List[Union[int, Headers]],
+        headers_set: Set[Union[int, Headers]],
         chunks: List[Any],
     ) -> None:
         self._iterator = iterator
@@ -157,15 +157,15 @@ class GuardedIterator:
         self.closed = True
 
         if hasattr(self._iterator, "close"):
-            self._iterator.close()
+            self._iterator.close()  # type: ignore
 
         if self.headers_set:
             status_code, headers = self.headers_set
             bytes_sent = sum(self.chunks)
-            content_length = headers.get("content-length", type=int)
+            content_length = headers.get("content-length", type=int)  # type: ignore
 
             if status_code == 304:
-                for key, _value in headers:
+                for key, _value in headers:  # type: ignore
                     key = key.lower()
                     if key not in ("expires", "content-location") and is_entity_header(
                         key
@@ -175,7 +175,7 @@ class GuardedIterator:
                         )
                 if bytes_sent:
                     warn("304 responses must not have a body.", HTTPWarning)
-            elif 100 <= status_code < 200 or status_code == 204:
+            elif 100 <= status_code < 200 or status_code == 204:  # type: ignore
                 if content_length != 0:
                     warn(
                         f"{status_code} responses must have an empty content length.",
@@ -258,14 +258,14 @@ class LintMiddleware:
         script_name = environ.get("SCRIPT_NAME", "")
         path_info = environ.get("PATH_INFO", "")
 
-        if script_name and script_name[0] != "/":
+        if script_name and script_name[0] != "/":  # type: ignore
             warn(
                 f"'SCRIPT_NAME' does not start with a slash: {script_name!r}",
                 WSGIWarning,
                 stacklevel=3,
             )
 
-        if path_info and path_info[0] != "/":
+        if path_info and path_info[0] != "/":  # type: ignore
             warn(
                 f"'PATH_INFO' does not start with a slash: {path_info!r}",
                 WSGIWarning,
@@ -305,7 +305,7 @@ class LintMiddleware:
         for item in headers:
             if type(item) is not tuple or len(item) != 2:
                 warn(WSGIWarning("Headers must tuple 2-item tuples"), stacklevel=3)
-            name, value = item
+            name, value = item  # type: ignore
             if type(name) is not str or type(value) is not str:
                 warn(WSGIWarning("header items must be strings"), stacklevel=3)
             if name.lower() == "status":
@@ -379,8 +379,8 @@ class LintMiddleware:
         # iterate to the end and we can check the content length.
         environ["wsgi.file_wrapper"] = FileWrapper
 
-        headers_set = []
-        chunks = []
+        headers_set: List[Any] = []
+        chunks: List[Any] = []
 
         def checking_start_response(*args, **kwargs):
             if len(args) not in (2, 3):
@@ -405,4 +405,4 @@ class LintMiddleware:
 
         app_iter = self.app(environ, checking_start_response)
         self.check_iterator(app_iter)
-        return GuardedIterator(app_iter, headers_set, chunks)
+        return GuardedIterator(app_iter, headers_set, chunks)  # type: ignore
