@@ -129,7 +129,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
     """A request handler that implements WSGI dispatching."""
 
     @property
-    def server_version(self) -> str:
+    def server_version(self) -> str:  # type: ignore
         from . import __version__
 
         return f"Werkzeug/{__version__}"
@@ -140,9 +140,9 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         def shutdown_server():
             self.server.shutdown_signal = True
 
-        url_scheme = "http" if self.server.ssl_context is None else "https"
+        url_scheme = "http" if self.server.ssl_context is None else "https"  # type: ignore
         if not self.client_address:
-            self.client_address = "<local>"
+            self.client_address = "<local>"  # type: ignore
         if isinstance(self.client_address, str):
             self.client_address = (self.client_address, 0)
         else:
@@ -156,15 +156,15 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         else:
             path_info = request_url.path
 
-        path_info = url_unquote(path_info)
+        path_info = url_unquote(path_info)  # type: ignore
 
         environ = {
             "wsgi.version": (1, 0),
             "wsgi.url_scheme": url_scheme,
             "wsgi.input": self.rfile,
             "wsgi.errors": sys.stderr,
-            "wsgi.multithread": self.server.multithread,
-            "wsgi.multiprocess": self.server.multiprocess,
+            "wsgi.multithread": self.server.multithread,  # type: ignore
+            "wsgi.multiprocess": self.server.multiprocess,  # type: ignore
             "wsgi.run_once": False,
             "werkzeug.server.shutdown": shutdown_server,
             "SERVER_SOFTWARE": self.server_version,
@@ -210,7 +210,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
                 environ["SSL_CLIENT_CERT"] = ssl.DER_cert_to_PEM_cert(peer_cert)
         except ValueError:
             # SSL handshake hasn't finished.
-            self.server.log("error", "Cannot fetch SSL peer certificate info")
+            self.server.log("error", "Cannot fetch SSL peer certificate info")  # type: ignore
         except AttributeError:
             # Not using TLS, the socket will not have getpeercert().
             pass
