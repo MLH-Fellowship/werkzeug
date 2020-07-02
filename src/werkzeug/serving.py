@@ -326,11 +326,11 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         nothing happens.
         """
 
-    def handle_one_request(self):
+    def handle_one_request(self) -> None:
         """Handle a single HTTP request."""
         self.raw_requestline = self.rfile.readline()
         if not self.raw_requestline:
-            self.close_connection = 1
+            self.close_connection = 1  # type: ignore
         elif self.parse_request():
             return self.run_wsgi()
 
