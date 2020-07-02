@@ -321,7 +321,9 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 
         self.server._BaseServer__shutdown_request = True  # type: ignore
 
-    def connection_dropped(self, error, environ: Optional[WSGIEnvironment] = None) -> Any:
+    def connection_dropped(
+        self, error, environ: Optional[WSGIEnvironment] = None
+    ) -> Any:
         """Called if the connection was closed by the client.  By default
         nothing happens.
         """
@@ -389,13 +391,13 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 
         self.log("info", '"%s" %s %s', msg, code, size)
 
-    def log_error(self, *args):
+    def log_error(self, *args) -> None:
         self.log("error", *args)
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args) -> None:
         self.log("info", format, *args)
 
-    def log(self, type, message, *args):
+    def log(self, type, message, *args) -> None:
         _log(
             type,
             f"{self.address_string()} - - [{self.log_date_time_string()}] {message}\n",
