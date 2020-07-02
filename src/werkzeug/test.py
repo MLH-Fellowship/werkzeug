@@ -9,21 +9,25 @@ from itertools import chain
 from random import random
 from tempfile import TemporaryFile
 from time import time
-from typing import Any, Mapping
+from typing import Any
+from typing import BinaryIO
 from typing import Callable
 from typing import Dict
+from typing import Generic
 from typing import Hashable
 from typing import IO
 from typing import Iterator
 from typing import List
+from typing import Mapping
 from typing import Optional
+from typing import TextIO
 from typing import Tuple
 from typing import Type
 from typing import Union
 from urllib.request import Request as _UrllibRequest
-
 from werkzeug.debug import DebuggedApplication
 from werkzeug.middleware.http_proxy import ProxyMiddleware
+from werkzeug.types import AnyHeaders
 from werkzeug.types import WSGIEnvironment
 from werkzeug.wrappers.base_response import BaseResponse
 from werkzeug.wrappers.request import PlainRequest
@@ -61,7 +65,7 @@ def stream_encode_multipart(
     threshold: int = 1024 * 500,
     boundary: Optional[str] = None,
     charset: str = "utf-8",
-) -> Tuple[IO, int, str]:
+) -> Tuple[BinaryIO, int, str]:
     """Encode a dict of values (either strings or file descriptors or
     :class:`FileStorage` objects.) into a multipart encoded string stored
     in a file descriptor.
@@ -135,7 +139,9 @@ def stream_encode_multipart(
     return _closure[0], length, boundary  # type: ignore
 
 
-def encode_multipart(values, boundary=None, charset="utf-8"):
+def encode_multipart(
+    values: Mapping, boundary: Optional[str] = None, charset: str = "utf-8"
+) -> Tuple[str, bytes]:
     """Like `stream_encode_multipart` but returns a tuple in the form
     (``boundary``, ``data``) where data is bytes.
     """
@@ -145,12 +151,14 @@ def encode_multipart(values, boundary=None, charset="utf-8"):
     return boundary, stream.read()
 
 
-class _TestCookieHeaders:
+class _TestCookieHeaders(Generic[AnyHeaders]):
 
     """A headers adapter for cookielib
     """
 
-    def __init__(self, headers: Union[List[Tuple[str, str]], Headers]) -> None:
+    headers: AnyHeaders
+
+    def __init__(self, headers: AnyHeaders) -> None:
         self.headers = headers
 
     def getheaders(self, name):
@@ -175,7 +183,9 @@ class _TestCookieResponse:
     adapter for our test responses to make them available for cookielib.
     """
 
-    def __init__(self, headers: Union[List[Tuple[str, str]], Headers]) -> None:
+    headers: _TestCookieHeaders
+
+    def __init__(self, headers: AnyHeaders) -> None:
         self.headers = _TestCookieHeaders(headers)
 
     def info(self) -> _TestCookieHeaders:
@@ -199,9 +209,7 @@ class _TestCookieJar(CookieJar):
         else:
             environ.pop("HTTP_COOKIE", None)
 
-    def extract_wsgi(
-        self, environ: WSGIEnvironment, headers: Union[List[Tuple[str, str]], Headers]
-    ) -> None:
+    def extract_wsgi(self, environ: WSGIEnvironment, headers: AnyHeaders) -> None:
         """Extract the server's set-cookie headers as cookies into the
         cookie jar.
         """

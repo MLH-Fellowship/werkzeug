@@ -17,8 +17,8 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
-from typing import TYPE_CHECKING
 from typing import Tuple
+from typing import TYPE_CHECKING
 from typing import Union
 from weakref import WeakKeyDictionary
 

@@ -11,9 +11,9 @@ from time import gmtime
 from time import struct_time
 from time import time
 from typing import TYPE_CHECKING
-from typing import TypeVar
 from urllib.parse import unquote_to_bytes as _unquote
 from urllib.request import parse_http_list as _parse_list_header
+from werkzeug.types import AnyHeaders
 from werkzeug.types import BytesOrStr
 from werkzeug.types import T
 
@@ -1066,8 +1066,7 @@ def is_resource_modified(
 
 
 def remove_entity_headers(
-    headers: Union[List[Tuple[str, str]], Headers],
-    allowed: Tuple[str, str] = ("expires", "content-location"),
+    headers: AnyHeaders, allowed: Tuple[str, str] = ("expires", "content-location"),
 ) -> None:
     """Remove all entity headers from a list or :class:`Headers` object.  This
     operation works in-place.  `Expires` and `Content-Location` headers are
@@ -1089,7 +1088,7 @@ def remove_entity_headers(
     ]
 
 
-def remove_hop_by_hop_headers(headers: Union[List[Tuple[str, str]], Headers]) -> None:
+def remove_hop_by_hop_headers(headers: AnyHeaders) -> None:
     """Remove all HTTP/1.1 "Hop-by-Hop" headers from a list or
     :class:`Headers` object.  This operation works in-place.
 
