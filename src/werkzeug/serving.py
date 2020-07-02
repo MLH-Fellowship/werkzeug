@@ -81,7 +81,7 @@ class DechunkedInput(io.RawIOBase):
     def readable(self) -> bool:
         return True
 
-    def read_chunk_len(self):
+    def read_chunk_len(self) -> int:
         try:
             line = self._rfile.readline().decode("latin1")
             _len = int(line.strip(), 16)
