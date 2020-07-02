@@ -301,16 +301,16 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
                 pass
             self.server.log("error", "Error on request:\n%s", traceback.plaintext)  # type: ignore
 
-    def handle(self):
+    def handle(self) -> None:
         """Handles a request ignoring dropped connections."""
         try:
             BaseHTTPRequestHandler.handle(self)
         except (ConnectionError, socket.timeout) as e:
             self.connection_dropped(e)
         except Exception as e:
-            if self.server.ssl_context is None or not is_ssl_error(e):
+            if self.server.ssl_context is None or not is_ssl_error(e):  # type: ignore
                 raise
-        if self.server.shutdown_signal:
+        if self.server.shutdown_signal:  # type: ignore
             self.initiate_shutdown()
 
     def initiate_shutdown(self):
