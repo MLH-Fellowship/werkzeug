@@ -722,7 +722,7 @@ def make_server(
         )
 
 
-def is_running_from_reloader():
+def is_running_from_reloader() -> bool:
     """Checks if the application is running from within the Werkzeug
     reloader subprocess.
 
