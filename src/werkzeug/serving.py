@@ -128,7 +128,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
     """A request handler that implements WSGI dispatching."""
 
     @property
-    def server_version(self):
+    def server_version(self) -> str:
         from . import __version__
 
         return f"Werkzeug/{__version__}"
