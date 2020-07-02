@@ -28,6 +28,7 @@ from typing import Tuple
 
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
+from werkzeug.types import WSGIEnvironment
 
 from ._internal import _log
 from ._internal import _wsgi_encoding_dance
@@ -133,7 +134,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 
         return f"Werkzeug/{__version__}"
 
-    def make_environ(self):
+    def make_environ(self) -> WSGIEnvironment:
         request_url = url_parse(self.path)
 
         def shutdown_server():
