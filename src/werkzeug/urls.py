@@ -10,7 +10,6 @@ import os
 import re
 import warnings
 from collections import namedtuple
-from io import BytesIO
 from io import StringIO
 from typing import Any
 from typing import AnyStr
@@ -18,14 +17,12 @@ from typing import BinaryIO
 from typing import Callable
 from typing import Dict
 from typing import FrozenSet
-from typing import IO
 from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Type
 from typing import Union
-from werkzeug.types import BytesOrStr
 from werkzeug.types import T
 
 from ._internal import _check_str_tuple
@@ -188,7 +185,7 @@ class BaseURL(_URLTuple):
             rv = f"{auth}@{rv}"  # type: ignore
         return rv  # type: ignore
 
-    def to_uri_tuple(self):
+    def to_uri_tuple(self) -> BytesURL:
         """Returns a :class:`BytesURL` tuple that holds a URI.  This will
         encode all the information in the URL properly to ASCII using the
         rules a web browser would follow.
@@ -196,9 +193,9 @@ class BaseURL(_URLTuple):
         It's usually more interesting to directly call :meth:`iri_to_uri` which
         will return a string.
         """
-        return url_parse(iri_to_uri(self).encode("ascii"))
+        return url_parse(iri_to_uri(self).encode("ascii"))  # type: ignore
 
-    def to_iri_tuple(self):
+    def to_iri_tuple(self) -> URL:
         """Returns a :class:`URL` tuple that holds a IRI.  This will try
         to decode as much information as possible in the URL without
         losing information similar to how a web browser does it for the
@@ -207,11 +204,11 @@ class BaseURL(_URLTuple):
         It's usually more interesting to directly call :meth:`uri_to_iri` which
         will return a string.
         """
-        return url_parse(uri_to_iri(self))
+        return url_parse(uri_to_iri(self))  # type: ignore
 
     def get_file_location(
         self, pathformat: Optional[str] = None
-    ) -> Tuple[Optional[BytesOrStr], Optional[BytesOrStr]]:
+    ) -> Tuple[Optional[Union[bytes, str]], Optional[Union[bytes, str]]]:
         """Returns a tuple with the location of the file in the form
         ``(server, location)``.  If the netloc is empty in the URL or
         points to localhost, it's represented as ``None``.
@@ -287,7 +284,7 @@ class BaseURL(_URLTuple):
     def _split_host(
         self,
     ) -> Union[
-        Tuple[Optional[BytesOrStr], Optional[BytesOrStr]], List[str],
+        Tuple[Optional[Union[bytes, str]], Optional[Union[bytes, str]]], List[str],
     ]:
         rv = self._split_netloc()[1]
         if not rv:
@@ -449,8 +446,8 @@ def _url_unquote_legacy(
 
 
 def url_parse(
-    url: str, scheme: Optional[str] = None, allow_fragments: bool = True
-) -> Union[BytesURL, URL, BaseURL]:
+    url: AnyStr, scheme: Optional[str] = None, allow_fragments: bool = True
+) -> Union[BytesURL, URL]:
     """Parses a URL from a string into a :class:`URL` tuple.  If the URL
     is lacking a scheme it can be provided as second argument. Otherwise,
     it is ignored.  Optionally fragments can be stripped from the URL
@@ -467,7 +464,7 @@ def url_parse(
     is_text_based = isinstance(url, str)
 
     if scheme is None:
-        scheme = s("")
+        scheme = s("")  # type: ignore
     netloc = query = fragment = s("")
     i = url.find(s(":"))
     if i > 0 and _scheme_re.match(_to_str(url[:i], errors="replace")):
@@ -476,7 +473,7 @@ def url_parse(
         rest = url[i + 1 :]
         if not rest or any(c not in s("0123456789") for c in rest):
             # not a port number
-            scheme, url = url[:i].lower(), rest
+            scheme, url = url[:i].lower(), rest  # type: ignore
 
     if url[:2] == s("//"):
         delim = len(url)
@@ -496,7 +493,7 @@ def url_parse(
         url, query = url.split(s("?"), 1)
 
     result_type = URL if is_text_based else BytesURL
-    return result_type(scheme, netloc, url, query, fragment)
+    return result_type(scheme, netloc, url, query, fragment)  # type: ignore
 
 
 def _make_fast_url_quote(charset="utf-8", errors="strict", safe="/:", unsafe=""):
@@ -620,7 +617,7 @@ def url_unquote(
     charset: Optional[str] = "utf-8",
     errors: str = "replace",
     unsafe: str = "",
-) -> Union[str, bytes]:
+) -> Union[bytes, str]:
     """URL decode a single string with a given encoding.  If the charset
     is set to `None` no decoding is performed and raw bytes are
     returned.
@@ -657,7 +654,7 @@ def url_unquote_plus(
     return url_unquote(s, charset, errors)
 
 
-def url_fix(s: Union[str, bytes], charset: str = "utf-8") -> str:
+def url_fix(s: str, charset: str = "utf-8") -> str:
     r"""Sometimes you get an URL by a user that just isn't a real URL because
     it contains unsafe characters like ' ' and so on. This function can fix
     some of the problems in a similar way browsers handle data entered by the
@@ -684,7 +681,7 @@ def url_fix(s: Union[str, bytes], charset: str = "utf-8") -> str:
     path = url_quote(url.path, charset, safe="/%+$!*'(),")
     qs = url_quote_plus(url.query, charset, safe=":&%=+$!*'(),")
     anchor = url_quote_plus(url.fragment, charset, safe=":&%=+$!*'(),")
-    return url_unparse((url.scheme, url.encode_netloc(), path, qs, anchor))  # type: ignore
+    return url_unparse((url.scheme, url.encode_netloc(), path, qs, anchor))
 
 
 # not-unreserved characters remain quoted when unquoting to IRI
@@ -802,7 +799,7 @@ def iri_to_uri(
     path = url_quote(iri.path, charset, errors, _to_uri_safe)
     query = url_quote(iri.query, charset, errors, _to_uri_safe)
     fragment = url_quote(iri.fragment, charset, errors, _to_uri_safe)
-    return url_unparse((iri.scheme, iri.encode_netloc(), path, query, fragment))  # type: ignore
+    return url_unparse((iri.scheme, iri.encode_netloc(), path, query, fragment))
 
 
 def url_decode(
