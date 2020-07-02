@@ -334,7 +334,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         elif self.parse_request():
             return self.run_wsgi()
 
-    def send_response(self, code, message=None):
+    def send_response(self, code, message=None) -> None:
         """Send the response header and log the response code."""
         self.log_request(code)
         if message is None:
