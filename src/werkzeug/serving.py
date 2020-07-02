@@ -359,7 +359,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
     def port_integer(self) -> int:
         return self.client_address[1]
 
-    def log_request(self, code="-", size="-"):
+    def log_request(self, code="-", size="-") -> None:
         try:
             path = uri_to_iri(self.path)
             msg = f"{self.command} {path} {self.request_version}"
