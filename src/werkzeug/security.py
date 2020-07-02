@@ -216,7 +216,7 @@ def check_password_hash(pwhash: str, password: str) -> bool:
     return safe_str_cmp(_hash_internal(method, salt, password)[0], hashval)
 
 
-def safe_join(directory: str, *pathnames) -> Optional[str]:
+def safe_join(directory: str, *pathnames: str) -> Optional[str]:
     """Safely join zero or more untrusted path components to a base
     directory to avoid escaping the base directory.
 
