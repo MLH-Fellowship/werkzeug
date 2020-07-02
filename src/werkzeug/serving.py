@@ -24,7 +24,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import Tuple, List, Any
+from typing import Tuple, List, Any, Optional
 
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
@@ -321,7 +321,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 
         self.server._BaseServer__shutdown_request = True  # type: ignore
 
-    def connection_dropped(self, error, environ=None):
+    def connection_dropped(self, error, environ: Optional[WSGIEnvironment] = None) -> Any:
         """Called if the connection was closed by the client.  By default
         nothing happens.
         """
