@@ -343,10 +343,10 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
             hdr = f"{self.protocol_version} {code} {message}\r\n"
             self.wfile.write(hdr.encode("ascii"))
 
-    def version_string(self):
+    def version_string(self) -> str:
         return BaseHTTPRequestHandler.version_string(self).strip()
 
-    def address_string(self):
+    def address_string(self) -> str:
         if getattr(self, "environ", None):
             return self.environ["REMOTE_ADDR"]
         elif not self.client_address:
