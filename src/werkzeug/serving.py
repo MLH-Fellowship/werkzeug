@@ -24,8 +24,6 @@ from datetime import datetime as dt
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import Callable
-from typing import Optional
 from typing import Tuple
 
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
@@ -80,7 +78,7 @@ class DechunkedInput(io.RawIOBase):
         self._done = False
         self._len = 0
 
-    def readable(self):
+    def readable(self) -> bool:
         return True
 
     def read_chunk_len(self):
