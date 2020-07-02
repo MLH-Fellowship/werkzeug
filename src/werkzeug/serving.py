@@ -449,7 +449,7 @@ def generate_adhoc_ssl_pair(cn: Optional[str] = None) -> Tuple[_Certificate, _RS
 
 
 def make_ssl_devcert(
-    base_path: str, host: None = None, cn: None = None
+    base_path: str, host: Optional[str] = None, cn: Optional[str] = None
 ) -> Tuple[str, str]:
     """Creates an SSL key for development.  This should be used instead of
     the ``'adhoc'`` key which generates a new cert on each server start.
