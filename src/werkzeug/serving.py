@@ -24,7 +24,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import Tuple
+from typing import Tuple, List, Any
 
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
@@ -217,13 +217,13 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 
         return environ
 
-    def run_wsgi(self):
+    def run_wsgi(self) -> None:
         if self.headers.get("Expect", "").lower().strip() == "100-continue":
             self.wfile.write(b"HTTP/1.1 100 Continue\r\n\r\n")
 
         self.environ = environ = self.make_environ()
-        headers_set = []
-        headers_sent = []
+        headers_set: List[Any] = []
+        headers_sent: List[Any] = []
 
         def write(data):
             assert headers_set, "write() before start_response"
@@ -282,11 +282,11 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
                     application_iter.close()
 
         try:
-            execute(self.server.app)
+            execute(self.server.app)  # type: ignore
         except (ConnectionError, socket.timeout) as e:
             self.connection_dropped(e, environ)
         except Exception:
-            if self.server.passthrough_errors:
+            if self.server.passthrough_errors:  # type: ignore
                 raise
             from .debug.tbtools import get_current_traceback
 
@@ -299,7 +299,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
                 execute(InternalServerError())
             except Exception:
                 pass
-            self.server.log("error", "Error on request:\n%s", traceback.plaintext)
+            self.server.log("error", "Error on request:\n%s", traceback.plaintext)  # type: ignore
 
     def handle(self):
         """Handles a request ignoring dropped connections."""
