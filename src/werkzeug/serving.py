@@ -356,7 +356,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         else:
             return self.client_address[0]
 
-    def port_integer(self):
+    def port_integer(self) -> int:
         return self.client_address[1]
 
     def log_request(self, code="-", size="-"):
