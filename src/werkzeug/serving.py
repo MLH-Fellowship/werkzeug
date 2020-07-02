@@ -313,13 +313,13 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         if self.server.shutdown_signal:  # type: ignore
             self.initiate_shutdown()
 
-    def initiate_shutdown(self):
+    def initiate_shutdown(self) -> None:
         if is_running_from_reloader():
             # Windows does not provide SIGKILL, go with SIGTERM then.
             sig = getattr(signal, "SIGKILL", signal.SIGTERM)
             os.kill(os.getpid(), sig)
 
-        self.server._BaseServer__shutdown_request = True
+        self.server._BaseServer__shutdown_request = True  # type: ignore
 
     def connection_dropped(self, error, environ=None):
         """Called if the connection was closed by the client.  By default
