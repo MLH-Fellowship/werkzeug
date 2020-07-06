@@ -225,7 +225,7 @@ def parse_converter_args(argstr: str) -> Any:
 def parse_rule(
     rule: str,
 ) -> Iterator[
-    Union[Tuple[None, None, str], Tuple[str, str, str], Tuple[str, None, str]]
+    Union[Tuple[Optional[str], Optional[str], Optional[str]]]
 ]:
     """Parse a rule and return it as generator. Each iteration yields tuples
     in the form ``(converter, arguments, variable)``. If the converter is
@@ -281,7 +281,7 @@ class RequestRedirect(HTTPException, RoutingException):
 
     def get_response(
         self,
-        environ: Optional[Dict[str, Union[str, Tuple[int, int], BytesIO, bool]]] = None,
+        environ: Optional[WSGIEnvironment] = None,
     ) -> Response:
         return redirect(self.new_url, self.code)
 
@@ -298,7 +298,7 @@ class RequestPath(RoutingException):
 class RequestAliasRedirect(RoutingException):  # noqa: B903
     """This rule is an alias and wants to redirect to the canonical URL."""
 
-    def __init__(self, matched_values: Dict[str, int]) -> None:
+    def __init__(self, matched_values: Dict[Any, Any]) -> None:
         self.matched_values = matched_values
 
 
@@ -819,7 +819,7 @@ class Rule(RuleFactory):
         self,
         variable_name: str,
         converter_name: str,
-        args: Union[Tuple, Tuple[str, str]],
+        args: Tuple,
         kwargs: Dict[str, bool],
     ) -> BaseConverter:
         """Looks up the converter for the given parameter.
@@ -909,7 +909,7 @@ class Rule(RuleFactory):
         regex = f"^{''.join(regex_parts)}{tail}$"
         self._regex = re.compile(regex)
 
-    def match(self, path: str, method: Optional[str] = None) -> Any:
+    def match(self, path: str, method: Optional[str] = None) -> Optional[dict]:
         """Check if the rule matches a given path. Path is a string in the
         form ``"subdomain|/path"`` and is assembled by the map.  If
         the map is doing host matching the subdomain part will be the host
@@ -950,7 +950,7 @@ class Rule(RuleFactory):
                     try:
                         value = self._converters[name].to_python(value)
                     except ValidationError:
-                        return
+                        return None
                     result[str(name)] = value
                 if self.defaults:
                     result.update(self.defaults)
@@ -971,6 +971,8 @@ class Rule(RuleFactory):
                     raise RequestAliasRedirect(result)
 
                 return result
+
+        return None
 
     @staticmethod
     def _get_func_code(code, name):
