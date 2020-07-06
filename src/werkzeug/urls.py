@@ -11,7 +11,7 @@ import re
 import warnings
 from collections import namedtuple
 from io import StringIO
-from typing import Any
+from typing import Any, NamedTuple
 from typing import AnyStr
 from typing import BinaryIO
 from typing import Callable
@@ -52,7 +52,13 @@ _hextobyte = {
 }
 _bytetohex = [f"%{char:02X}".encode("ascii") for char in range(256)]
 
-_URLTuple = namedtuple("_URLTuple", ["scheme", "netloc", "path", "query", "fragment"])
+
+class _URLTuple(NamedTuple):
+    scheme: Any
+    netloc: Any
+    path: Any
+    query: Any
+    fragment: Any
 
 
 class BaseURL(_URLTuple):
