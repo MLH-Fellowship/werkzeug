@@ -19,6 +19,7 @@ from typing import Callable
 from typing import Dict
 from typing import Hashable
 from typing import Iterator
+from typing import Optional
 from typing import Tuple
 from typing import Union
 
@@ -129,7 +130,7 @@ class _ConsoleFrame:
         self.id = 0
 
 
-def get_pin_and_cookie_name(app: Callable) -> Tuple[str, str]:
+def get_pin_and_cookie_name(app: Callable) -> Tuple[Optional[str], Optional[str]]:
     """Given an application object this returns a semi-stable 9 digit pin
     code and a random key.  The hope is that this is stable between
     restarts to not make debugging particularly frustrating.  If the pin
@@ -245,7 +246,7 @@ class DebuggedApplication:
         evalex: bool = False,
         request_key: str = "werkzeug.request",
         console_path: str = "/console",
-        console_init_func: None = None,
+        console_init_func: Optional[Callable] = None,
         show_hidden_frames: bool = False,
         pin_security: bool = True,
         pin_logging: bool = True,
@@ -373,7 +374,7 @@ class DebuggedApplication:
             return Response(data, mimetype=mimetype)
         return Response("Not Found", status=404)
 
-    def check_pin_trust(self, environ: Dict[str, Any]) -> bool:
+    def check_pin_trust(self, environ: Dict[str, Any]) -> Optional[bool]:
         """Checks if the request passed the pin test.  This returns `True` if the
         request is trusted on a pin/cookie basis and returns `False` if not.
         Additionally if the cookie's stored pin hash is wrong it will return
