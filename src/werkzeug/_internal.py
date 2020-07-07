@@ -90,10 +90,10 @@ def _check_str_tuple(value: Tuple[AnyStr, ...]) -> None:
 
 
 def _to_bytes(
-    x: Union[str, bytes],
+    x: Optional[Union[str, bytes]],
     charset: str = sys.getdefaultencoding(),
     errors: str = "strict",
-) -> bytes:  # noqa: B008
+) -> Optional[bytes]:  # noqa: B008
     if x is None or isinstance(x, bytes):
         return x
 
@@ -282,12 +282,12 @@ def _date_to_unix(arg: datetime) -> int:
 class _DictAccessorProperty:
     """Baseclass for `environ_property` and `header_property`."""
 
-    name: Any
+    name: str
     default: Any
     load_func: Any
     dump_func: Any
     __doc__: Any
-    read_only: Any = False
+    read_only: bool = False
 
     def __init__(
         self,
@@ -295,7 +295,7 @@ class _DictAccessorProperty:
         default: Optional[Any] = None,
         load_func: Optional[Any] = None,
         dump_func: Optional[Any] = None,
-        read_only: Optional[Any] = None,
+        read_only: Optional[bool] = None,
         doc: Optional[Any] = None,
     ) -> None:
         self.name = name
