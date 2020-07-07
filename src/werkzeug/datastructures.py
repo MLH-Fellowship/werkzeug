@@ -179,10 +179,7 @@ class ImmutableMultiDictMixin(ImmutableDictMixin):
 
     def __reduce_ex__(
         self, protocol: int
-    ) -> Union[
-        Tuple[Type[ImmutableMultiDict], Tuple[List[Any]]],
-        Tuple[Type[ImmutableMultiDict], Tuple[List[Tuple[str, str]]]],
-    ]:
+    ) -> Tuple[type, List[Any]]:
         return type(self), (list(self.items(multi=True)),)  # type: ignore
 
     def _iter_hashitems(self) -> Iterator[Any]:
@@ -212,7 +209,7 @@ class UpdateDictMixin:
     :private:
     """
 
-    on_update: Callable = None
+    on_update: Optional[Callable] = None
 
     def calls_update(name: str):  # type: ignore # noqa: B902
         def oncall(self, *args, **kw):
@@ -224,7 +221,7 @@ class UpdateDictMixin:
         oncall.__name__ = name
         return oncall
 
-    def setdefault(self, key: str, default: None = None) -> Optional[str]:
+    def setdefault(self, key: str, default: Optional[str] = None) -> Optional[str]:
         modified = key not in self  # type: ignore
         rv = super().setdefault(key, default)  # type: ignore
         if modified and self.on_update is not None:
@@ -2121,7 +2118,7 @@ class _CacheControl(UpdateDictMixin, dict):  # type: ignore
         on_update: Optional[Callable] = None,
     ) -> None:
         dict.__init__(self, values or ())
-        self.on_update = on_update  # type: ignore
+        self.on_update = on_update
         self.provided = values is not None
 
     def _get_cache_value(
@@ -2291,7 +2288,7 @@ class ContentSecurityPolicy(UpdateDictMixin, dict):  # type: ignore
         on_update: Optional[Callable] = None,
     ) -> None:
         dict.__init__(self, values or ())
-        self.on_update = on_update  # type: ignore
+        self.on_update = on_update
         self.provided = values is not None
 
     def _get_value(self, key: str) -> Optional[str]:
@@ -2333,7 +2330,7 @@ class CallbackDict(UpdateDictMixin, dict):  # type: ignore
         on_update: Optional[Callable] = None,
     ) -> None:
         dict.__init__(self, initial or ())
-        self.on_update = on_update  # type: ignore
+        self.on_update = on_update
 
     def __repr__(self):
         return f"<{type(self).__name__} {dict.__repr__(self)}>"
@@ -2891,7 +2888,7 @@ class WWWAuthenticate(UpdateDictMixin, dict):  # type: ignore
         dict.__init__(self, values or ())
         if auth_type:
             self["__auth_type__"] = auth_type
-        self.on_update = on_update  # type: ignore
+        self.on_update = on_update
 
     def set_basic(self, realm: str = "authentication required") -> None:
         """Clear the auth info and enable basic auth."""
